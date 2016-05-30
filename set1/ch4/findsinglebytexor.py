@@ -19,23 +19,20 @@ from singlebytexor import find_key
 
 def find_msg(filename):
     score = 0
-    keys = ('', '', '', '')
+    keys = ('', '', '')
     with open(filename, 'r') as f:
         for line in f:
             line = line.rstrip('\n')
             linekeys = find_key(line)
             if linekeys[0] is not '' and score < linekeys[2]:
                 score = linekeys[2]
-                keys = (line, linekeys[0], linekeys[1], linekeys[2])
+                keys = (line, linekeys[0], linekeys[1])
     return keys
 
 def main():
     ret = find_msg('./4.txt')
     if ret[0]:
-        print('It worked!  Key list:\nLine: ' + ret[0] 
-            + '\nKey: ' + ret[1] 
-            + '\nPT: ' + ret[2]
-            )
+        print('Line: ' + ret[0] + '\nKey: ' + ret[1] + '\nPT: ' + ret[2])
         return 0
     print("Nothing found.")
     return -1
