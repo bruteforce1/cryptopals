@@ -18,7 +18,6 @@ If your function works properly, then when you feed it the string:
 """
 
 import argparse
-import base64
 import sys
 import binascii
 
