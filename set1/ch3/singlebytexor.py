@@ -28,7 +28,7 @@ def find_key(hexstr):
     def get_score(s):
         sscore = 0
         for c in s:
-            if c in string.ascii_letters or c == ' ':
+            if c in string.ascii_letters or c == ' ' or c == '\n':
                 sscore += 1
             elif c in string.punctuation or c in string.digits:
                 sscore -= 5
@@ -46,6 +46,7 @@ def find_key(hexstr):
     for x in range(0,255):
         (test,testscore) = xor_key(msg,x,len(hexstr)/2)
         if score < testscore:
+            score = testscore
             keys = (chr(x), test, score)
     return keys
 
