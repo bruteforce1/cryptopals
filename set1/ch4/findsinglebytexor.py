@@ -17,7 +17,7 @@ import sys
 sys.path.insert(0, '../ch3')
 from singlebytexor import find_key
 
-def display_ans(filename):
+def find_msg(filename):
     score = 0
     keys = ('', '', '', '')
     with open(filename, 'r') as f:
@@ -30,7 +30,7 @@ def display_ans(filename):
     return keys
 
 def main():
-    ret = display_ans('./4.txt')
+    ret = find_msg('./4.txt')
     if ret[0]:
         print('It worked!  Key list:\nLine: ' + ret[0] 
             + '\nKey: ' + ret[1] 
