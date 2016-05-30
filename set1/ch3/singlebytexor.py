@@ -23,6 +23,7 @@ import sys
 def find_key(hexstr):
     keys = ('', '')
     score = 0
+    msg = binascii.unhexlify(hexstr.encode('utf-8'))
 
     def get_score(s):
         sscore = 0
@@ -33,22 +34,18 @@ def find_key(hexstr):
                 sscore -= 5
             else:
                 sscore -= 100
-                
         return sscore
 
-    def is_printable(s):
-        return all(c in string.printable for c in s)
-
-    def test_key(msg, key, msglen):
+    def xor_key(msg, key, msglen):
         testmsg = ''.join(chr(x ^ key) for x in msg)
-        if is_printable(testmsg):
-            return testmsg
-        return ''
+        sscore = get_score(testmsg)
+        if sscore > 0:
+            return (testmsg, sscore)
+        return ('', -1)
 
     for x in range(0,255):
-        msg = binascii.unhexlify(hexstr.encode('utf-8'))
-        test = test_key(msg,x,len(hexstr)/2)
-        if test != '' and score < get_score(test):
+        (test,testscore) = xor_key(msg,x,len(hexstr)/2)
+        if score < testscore:
             keys = (chr(x), test)
     return keys
 
