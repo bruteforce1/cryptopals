@@ -21,7 +21,7 @@ import binascii
 import sys
 
 def find_key(hexstr):
-    keys = ('', '')
+    keys = ('', '', '')
     score = 0
     msg = binascii.unhexlify(hexstr.encode('utf-8'))
 
@@ -46,7 +46,7 @@ def find_key(hexstr):
     for x in range(0,255):
         (test,testscore) = xor_key(msg,x,len(hexstr)/2)
         if score < testscore:
-            keys = (chr(x), test)
+            keys = (chr(x), test, score)
     return keys
 
 def main():
