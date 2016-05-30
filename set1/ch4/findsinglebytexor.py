@@ -14,9 +14,7 @@ import argparse
 import base64
 import string
 import sys
-
 sys.path.insert(0, '../ch3')
-
 from singlebytexor import find_key
 
 def display_ans(filename):
