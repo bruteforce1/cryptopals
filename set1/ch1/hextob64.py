@@ -13,7 +13,6 @@ SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t
 
 import argparse
 import base64
-import binascii
 import sys
 
 def hex_to_base64(hexstr):
