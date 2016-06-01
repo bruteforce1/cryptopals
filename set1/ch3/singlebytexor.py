@@ -43,7 +43,7 @@ def find_key(hexstr):
             return (testmsg, sscore)
         return ('', -1)
 
-    for x in range(0,255):
+    for x in range(1,255):
         (test,testscore) = xor_key(msg,x,len(hexstr)/2)
         if score < testscore:
             score = testscore
