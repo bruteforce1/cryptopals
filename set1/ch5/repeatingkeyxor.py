@@ -31,7 +31,7 @@ import sys
 import math
 import binascii
 
-def encrypt(msg, key):
+def encrypt_rkx(msg, key):
     msglen=len(msg)
     testmsg = ''.join(chr(ord(x) ^ ord(y)) 
         for x,y in zip(key*(math.ceil(msglen/len(key))+1),msg))
@@ -40,7 +40,7 @@ def encrypt(msg, key):
 def main(message, key):
     print('Line: ' + message)
     print('Key: ' + key)
-    ret = encrypt(message,key)
+    ret = encrypt_rkx(message,key)
     if ret:
         print('Encrypt: ' + ret)
         return 0
