@@ -56,6 +56,6 @@ if __name__ == '__main__':
                     default='ICE')
     args = parser.parse_args()
     if not args.message:
-        args.message = 'Burning \'em, if you ain\'t quick and nimble\nI go crazy'
-        args.message += ' when I hear a cymbal'
+        args.message = 'Burning \'em, if you ain\'t quick and nimble\nI go'
+        args.message += ' crazy when I hear a cymbal'
     sys.exit(main(args.message, args.key))
