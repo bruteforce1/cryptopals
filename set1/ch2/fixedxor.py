@@ -25,6 +25,9 @@ def xorbinarystrings(str1, str2):
     if len(str1) != len(str2):
         print('XOR strings must be same length')
         return ''
+    if len(str1) % 2 == 1:
+        print('Hexadecimal strings must be even length')
+        return ''
     bstr1 = binascii.unhexlify(str1)
     bstr2 = binascii.unhexlify(str2)
     return binascii.hexlify(
