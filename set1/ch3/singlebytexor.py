@@ -23,7 +23,11 @@ import sys
 def find_key(hexstr):
     keys = ('', '', '')
     score = 0
-    msg = binascii.unhexlify(hexstr.encode('utf-8'))
+    try:
+        msg = binascii.unhexlify(hexstr.encode('utf-8'))
+    except binascii.Error:
+        print('Hexadecimal strings must be even length')
+        return ''
 
     def get_score(s):
         sscore = 0
