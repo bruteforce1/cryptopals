@@ -18,7 +18,8 @@ import sys
 
 def hex_to_base64(hexstr):
     try:
-        ret = binascii.b2a_base64(binascii.unhexlify(hexstr)).decode("utf-8").rstrip()
+        ret = binascii.b2a_base64(
+            binascii.unhexlify(hexstr)).decode("utf-8").rstrip()
     except binascii.Error:
         print("Hex string must contain an even length of values.")
         ret = ''
