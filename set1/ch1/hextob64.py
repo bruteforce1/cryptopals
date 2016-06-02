@@ -12,15 +12,24 @@ SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t
 """
 
 import argparse
-import base64
+import binascii
+import string
 import sys
 
 def hex_to_base64(hexstr):
-    return base64.b64encode(bytes.fromhex(hexstr)).decode('utf-8')
+    try:
+        ret = binascii.b2a_base64(binascii.unhexlify(hexstr)).decode("utf-8").rstrip()
+    except binascii.Error:
+        print("Hex string must contain an even length of values.")
+        ret = ''
+    return ret
 
 def main(hexstring):
-    print(hex_to_base64(hexstring))
-    return 0
+    ret = hex_to_base64(hexstring)
+    if ret:
+        print(ret)
+        return 0
+    return -1
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
