@@ -57,31 +57,48 @@ from singlebytexor import find_key
 def decrypt_repeated_key_xor(filename):
 
     def decrypt_rkx(msg, keysize):
+        #step 5
+        blocks = [msg[i:i + keysize] for i in range(0, len(msg), keysize)] 
+
+        #step 6
         xorkeys = ''
-        blocks = [msg[i:i + keysize] for i in range(0, len(msg), keysize)]
         newblocks = []
         for x in range(0,keysize):
-            line = ''
+            line = bytearray()
             for b in blocks:
                 if x < len(b):
-                    line += b[x]
-            l = binascii.hexlify(line.encode('utf-8')).decode('utf-8')
-            ret = find_key(l)
+                    line.append(b[x])
+            l = binascii.hexlify(line).decode('utf-8')
+
+            #step 7
+            ret = find_key(l) 
             if not ret[0]:
-                print('Fail')
                 return ('','')
             xorkeys += ret[0]
             newblocks.append(ret[1])
         ans = ''
-        for x in range(0,keysize):
+
+        #step 9
+        for x in range(0,len(newblocks[0])):
             for nb in newblocks:
                 if x < len(nb):
                     ans += nb[x]
         return (xorkeys,str(ans))
 
-    def sort_key_sizes(crypt, max_len=40): #steps 3 and 4
+    def hammingdistance(str1, str2): 
+        #step 2
+        if len(str1) != len(str2):
+            print('Invalid Hamming Distance check')
+            exit(1)
+        bstr1 = ''.join(format(x, '08b') for x in str1)
+        bstr2 = ''.join(format(x, '08b') for x in str2)
+        return sum(x != y for x, y in zip(bstr1, bstr2))
+
+    def sort_key_sizes(crypt, max_len=40): 
+        #step 3
         KEYSIZE = range(2, max_len)
 
+        #step 4
         sizes = []
         for k in KEYSIZE:
              maxavs = math.floor(len(crypt)/k)
@@ -100,21 +117,11 @@ def decrypt_repeated_key_xor(filename):
         sizes.sort(key=lambda x: x[1])
         return [size[0] for size in sizes]
 
-    def hammingdistance(str1, str2): #step 2
-        if len(str1) != len(str2):
-            print('Invalid Hamming Distance check')
-            exit(1)
-        bstr1 = ''.join(format(ord(x), '08b') for x in str1)
-        bstr2 = ''.join(format(ord(x), '08b') for x in str2)
-        return sum(x != y for x, y in zip(bstr1, bstr2))
-
     crypt = ''
     with open(filename,'r') as f:
         for line in f:
             crypt += line.rstrip()
-
-    cry = binascii.a2b_base64(crypt).decode('utf-8')
-
+    cry = binascii.a2b_base64(crypt)
     keysize = sort_key_sizes(cry)[0]
     return decrypt_rkx(cry,keysize)
 
@@ -130,8 +137,8 @@ def main(filename):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description='Encrypts a message with repeating key XOR, using the \
-        key \'ICE\'.'
+        description='Takes a message encrypted with repeating key XOR, and \
+        finds the key and decrypts it.'
         )
     parser.add_argument('inputfile', help='file with contents encrypted by \
         repeating key XOR and base64 encoded')
