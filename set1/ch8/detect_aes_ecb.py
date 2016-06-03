@@ -36,7 +36,9 @@ def detect_aes_ecb(filename):
             test = line.rstrip()
             tests.append((test,test_aes_ecb(test)))
     tests.sort(key=lambda x: x[1], reverse=True)
-    return tests[0][0]
+    if tests[0][1] is not 0:
+        return tests[0][0]
+    return '' ''
 
 def main(filename):
     ans = detect_aes_ecb(filename)
