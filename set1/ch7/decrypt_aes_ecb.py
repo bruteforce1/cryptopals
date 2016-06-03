@@ -46,8 +46,8 @@ def main(filename, key):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description='Takes a message encrypted with repeating key XOR, and \
-        finds the key and decrypts it.'
+        description='Takes a message encrypted with AES in ECB mode, and \
+        decrypts it using a provided key.'
         )
     parser.add_argument('inputfile', help='file with contents encrypted by \
         AES ECB and base64 encoded')
