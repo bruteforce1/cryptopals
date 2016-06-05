@@ -24,30 +24,34 @@ import string
 import sys
 
 def pad_pkcs7(message, block):
-    pad = block - len(message) % block
-    pc = '\\x' + '%02d' % (pad,)
-    return message + (pc * pad)
+    def check_block(bl):
+        try: 
+            b = int(bl)
+            if 1 < b and b <= 32:
+                return b
+            print('PKCS7 block size must be between 1 and 32 bytes')
+        except ValueError:
+            print('Not a valid integer')
+        return -1
 
-def check_args(bl):
-    try: 
-        block = int(bl)
-        if 0 < block and block < 100:
-            return block
-    except ValueError:
-        print('Not an integer')
-    return -1
+    if check_block(block) == -1:
+        return ''
+
+    pad = int(block) - len(message) % int(block)
+    if pad is 0:
+        pad = int(block)
+    ret = message + chr(pad) * pad
+    return ret.encode('utf-8')
 
 def main(message, bl):
     print('Line: ' + message)
     print('blocklength: ' + bl)
-    block = check_args(bl)
-    if block is not -1:
-        ret = pad_pkcs7(message,block)
-        if ret:
-            print('PKCS#7 padded: ' + ret)
-            return 0
-        else:
-            print('Error.')
+    ret = pad_pkcs7(message,bl)
+    if ret:
+        print('PKCS#7 padded: ')
+        print(ret)
+        return 0
+    print('Error.')
     return -1
 
 if __name__ == '__main__':
@@ -57,7 +61,8 @@ if __name__ == '__main__':
         )
     parser.add_argument('-m', '--message', help='opt. message to pad',
                     default='YELLOW SUBMARINE')
-    parser.add_argument('-b', '--blocklength', help='opt. block length',
+    parser.add_argument('-b', '--blocklength', help='opt. block length \
+                    in bytes, between 1-32',
                     default='20')
     args = parser.parse_args()
     sys.exit(main(args.message, args.blocklength))
