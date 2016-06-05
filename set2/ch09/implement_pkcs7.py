@@ -35,11 +35,11 @@ def pad_pkcs7(message, block):
         return -1
 
     if check_block(block) == -1:
-        return ''
+        return b''
 
-    pad = int(block) - len(message) % int(block)
-    if pad is 0:
-        pad = int(block)
+    pad = int(block)
+    if len(message) % block:
+        pad = int(block) - len(message) % int(block)
     ret = message + chr(pad) * pad
     return ret.encode('utf-8')
 
