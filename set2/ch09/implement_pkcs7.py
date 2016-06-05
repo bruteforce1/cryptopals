@@ -23,25 +23,33 @@ import argparse
 import string
 import sys
 
-def pad_pkcs7(message, block):
-    def check_block(bl):
-        try: 
-            b = int(bl)
-            if 1 < b and b <= 32:
-                return b
-            print('PKCS7 block size must be between 1 and 32 bytes')
-        except ValueError:
-            print('Not a valid integer')
-        return -1
+def check_block(bl):
+    try: 
+        b = int(bl)
+        if 1 < b and b <= 32:
+            return b
+        print('PKCS7 block size must be between 1 and 32 bytes')
+    except ValueError:
+        print('Not a valid integer')
+    return -1
 
-    if check_block(block) == -1:
-        return b''
 
-    pad = int(block)
-    if len(message) % block:
-        pad = int(block) - len(message) % int(block)
+def pad_pkcs7(message, block=16):
+    bl = check_block(block)
+    assert(bl != -1)
+    pad = bl
+    if len(message) % bl:
+        pad = bl - len(message) % bl
     ret = message + chr(pad) * pad
     return ret.encode('utf-8')
+
+def unpad_pkcs7(message, block=16):
+    bl = check_block(block)
+    assert(bl != -1)
+    assert(len(message) % int(bl) == 0)
+    pad = int(message[-1])
+    assert(message[-pad:] == bytes((pad,))*pad)
+    return message[:-pad]
 
 def main(message, bl):
     print('Line: ' + message)
@@ -50,6 +58,10 @@ def main(message, bl):
     if ret:
         print('PKCS#7 padded: ')
         print(ret)
+    unret = unpad_pkcs7(ret,bl)
+    if unret:
+        print('PKCS#7 unpadded: ')
+        print(unret)
         return 0
     print('Error.')
     return -1
