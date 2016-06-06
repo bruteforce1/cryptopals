@@ -65,11 +65,11 @@ def main(message, bl):
     if ret:
         print('PKCS#7 padded: ')
         print(ret)
-    unret = unpad_pkcs7(ret,bl)
-    if unret:
-        print('PKCS#7 unpadded: ')
-        print(unret)
-        return 0
+        unret = unpad_pkcs7(ret,bl)
+        if unret:
+            print('PKCS#7 unpadded: ')
+            print(unret)
+            return 0
     print('Error.')
     return -1
 
