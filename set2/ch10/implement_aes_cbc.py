@@ -71,6 +71,13 @@ def aes_cbc(filename, key, iv, encrypt=1):
     def get_blocks(byte, bs):
         return [byte[i:i+bs] for i in range(0, len(byte), bs)]
 
+    def make_b64_printable(enc):
+        ret = b''
+        for b in get_blocks(enc, 60):
+            ret += b
+            ret += b'\n'
+        return ret
+    
     def enc(text, key, iv):
         ret = b''
         pb = iv
@@ -79,7 +86,8 @@ def aes_cbc(filename, key, iv, encrypt=1):
         for bl in get_blocks(crypt, 16):
             pb = cipher.encrypt(xor_bytes(bl, pb))
             ret += pb
-        return base64.b64encode(ret)
+        ret = base64.b64encode(ret)
+        return make_b64_printable(ret)
 
     def dec(text, key, iv):
         ret = b''
