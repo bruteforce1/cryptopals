@@ -28,7 +28,7 @@ import os
 import string
 import sys
 sys.path.insert(0, '../')
-from set2_util import pad_pkcs7, unpad_pkcs7
+from set2_util import pkcs7_padding
 
 def aes_cbc(filename, key, iv, encrypt=1):
 
@@ -72,12 +72,12 @@ def aes_cbc(filename, key, iv, encrypt=1):
         for bl in get_blocks(crypt, 16):
             ret += xor_bytes(cipher.decrypt(bl), pb)
             pb = bl
-        return unpad_pkcs7(ret)
+        return pkcs7_padding(ret,16,0)
 
     def enc(text, key, iv):
         ret = b''
         pb = iv
-        crypt = pad_pkcs7(text)
+        crypt = pkcs7_padding(text,16,1)
         cipher = AES.new(key, AES.MODE_ECB)
         for bl in get_blocks(crypt, 16):
             pb = cipher.encrypt(xor_bytes(bl, pb))
