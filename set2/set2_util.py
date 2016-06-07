@@ -6,6 +6,9 @@ This module is used to define functions as they are worked through in
  is completed for use in future challenges.
 """
 
+import base64
+from Crypto.Cipher import AES
+import os
 import string
 import sys
 
@@ -56,12 +59,16 @@ def pkcs7_padding(message, block=16, pad=1):
         return(pkcs7_pad(m,bl))
     return(pkcs7_unpad(m,bl))
 
-def aes_cbc(filename, key, iv, encrypt=1):
+def aes_cbc(message, key, iv, encrypt=1):
 
-    def check_aes_input(filename, key, iv, encrypt):
-        if not os.path.isfile(filename):
-            print(filename + ' is not a valid file.')
-            return ('', b'', b'', -1)
+    def check_aes_input(message, key, iv, encrypt):
+        if type(message).__name__ == 'str':
+            m = message.encode('utf-8')
+        elif type(message).__name__ == 'bytes':
+            m = message
+        else:
+            print('message is unexpected type.')
+            return (b'',b'',-1,-1)
 
         if type(key).__name__ == 'str':
             k = key.encode('utf-8')
@@ -69,7 +76,7 @@ def aes_cbc(filename, key, iv, encrypt=1):
             k = key
         else:
             print('key is unexpected type.')
-            return ('', b'', b'', -1)
+            return (b'', b'', b'', -1)
         assert(len(k) == 16), 'Invalid key length'
 
         if type(iv).__name__ == 'str':
@@ -78,7 +85,7 @@ def aes_cbc(filename, key, iv, encrypt=1):
             i = iv
         else:
             print('IV is unexpected type.')
-            return ('', b'', b'', -1)
+            return (b'', b'', b'', -1)
         assert(len(i) == 16), 'Invalid IV length'
 
         try:
@@ -87,8 +94,8 @@ def aes_cbc(filename, key, iv, encrypt=1):
                 raise ValueError('Bad Encrypt')
         except ValueError:
             print('Encrypt not a valid integer between 0 and 1')
-            return ('', b'', b'', -1)
-        return (filename, k, i, e)
+            return (b'', b'', b'', -1)
+        return (m, k, i, e)
 
     def dec(text, key, iv):
         ret = b''
@@ -98,12 +105,12 @@ def aes_cbc(filename, key, iv, encrypt=1):
         for bl in get_blocks(crypt, 16):
             ret += xor_bytes(cipher.decrypt(bl), pb)
             pb = bl
-        return unpad_pkcs7(ret)
+        return pkcs7_padding(ret,16,0)
 
     def enc(text, key, iv):
         ret = b''
         pb = iv
-        crypt = pad_pkcs7(text)
+        crypt = pkcs7_padding(text,16,1)
         cipher = AES.new(key, AES.MODE_ECB)
         for bl in get_blocks(crypt, 16):
             pb = cipher.encrypt(xor_bytes(bl, pb))
@@ -124,17 +131,57 @@ def aes_cbc(filename, key, iv, encrypt=1):
     def xor_bytes(b1, b2):
         return b''.join(bytes([a ^ b]) for a,b in zip(b1,b2[:len(b1)]))
     
-    f, k, i, e = check_aes_input(filename, key, iv, encrypt)
+    crypt, k, i, e = check_aes_input(message, key, iv, encrypt)
     assert(e is not -1), 'Invalid input.'
 
-    crypt = ''
-
-    with open(f,'r') as infile:
-        for line in infile:
-            if not e:
-                line = line.rstrip()
-            crypt += line
     if e:
         return enc(crypt, k, i)
     return dec(crypt, k, i)
 
+def aes_ecb(message, key, encrypt=1):
+
+    def check_aes_input(message, key, iv, encrypt):
+        if type(message).__name__ == 'str':
+            m = message.encode('utf-8')
+        elif type(message).__name__ == 'bytes':
+            m = message
+        else:
+            print('message is unexpected type.')
+            return (b'',b'',-1)
+
+        if type(key).__name__ == 'str':
+            k = key.encode('utf-8')
+        elif type(key).__name__ == 'bytes':
+            k = key
+        else:
+            print('key is unexpected type.')
+            return (b'',b'',-1)
+        assert(len(k) == 16), 'Invalid key length'
+
+        try:
+            e = int(encrypt)
+            if not 0 <= encrypt <= 1:
+                raise ValueError('Bad Encrypt')
+        except ValueError:
+            print('Encrypt not a valid integer between 0 and 1')
+            return (b'',b'',-1)
+        return (m, k, e)
+
+    def dec(ct, key):
+        cry = base64.b64decode(ct)
+        cipher = AES.new(key, AES.MODE_ECB)
+        c = cipher.decrypt(cry)
+        return pkcs7_padding(c, 16, 0)
+        
+    def enc(ct, key):
+        cry = pkcs7_padding(ct,16,1)
+        cipher = AES.new(key, AES.MODE_ECB)
+        c = cipher.encrypt(cry)
+        return base64.b64encode(cry)
+
+    crypt, k, e = check_aes_input(message, key, encrypt)
+    assert(e is not -1), 'Invalid input.'
+
+    if e:
+        return enc(crypt, k)
+    return dec(crypt, k)
