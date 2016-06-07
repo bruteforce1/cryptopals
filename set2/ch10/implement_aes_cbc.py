@@ -30,38 +30,6 @@ import sys
 sys.path.insert(0, '../')
 from set2_util import pad_pkcs7, unpad_pkcs7
 
-def check_aes_input(filename, key, iv, encrypt):
-    if not os.path.isfile(filename):
-        print(filename + ' is not a valid file.')
-        return ('', b'', b'', -1)
-
-    if type(key).__name__ == 'str':
-        k = key.encode('utf-8')
-    elif type(key).__name__ == 'bytes':
-        k = key
-    else:
-        print('key is unexpected type.')
-        return ('', b'', b'', -1)
-    assert(len(k) == 16), 'Invalid key length'
-
-    if type(iv).__name__ == 'str':
-        i = iv.encode('utf-8')
-    elif type(iv).__name__ == 'bytes':
-        i = iv
-    else:
-        print('IV is unexpected type.')
-        return ('', b'', b'', -1)
-    assert(len(i) == 16), 'Invalid IV length'
-
-    try:
-        e = int(encrypt)
-        if not 0 <= encrypt <= 1:
-            raise ValueError('Bad Encrypt')
-    except ValueError:
-        print('Encrypt not a valid integer between 0 and 1')
-        return ('', b'', b'', -1)
-    return (filename, k, i, e)
-
 def aes_cbc(filename, key, iv, encrypt=1):
 
     def check_aes_input(filename, key, iv, encrypt):
