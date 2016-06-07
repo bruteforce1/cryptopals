@@ -23,49 +23,61 @@ import argparse
 import string
 import sys
 
-def check_pad_input(message,bl):
-    if type(message).__name__ == 'str':
-        m = message.encode('utf-8')
-    elif type(message).__name__ == 'bytes':
-        m = message
-    else:
-        print('message is unexpected type.')
-        return ('',-1)
+def pkcs7_padding(message, block=16, pad=1):
+
+    def check_pad_input(message,bl,pad):
+        if type(message).__name__ == 'str':
+            m = message.encode('utf-8')
+        elif type(message).__name__ == 'bytes':
+            m = message
+        else:
+            print('message is unexpected type.')
+            return ('',-1,-1)
     
-    try: 
-        b = int(bl)
-        if 1 < b and b <= 32:
-            return (m,b)
-        print('PKCS7 block size must be between 1 and 32 bytes')
-    except ValueError:
-        print('Not a valid integer')
-    return (m,-1)
+        try: 
+            b = int(bl)
+            if not 1 < b and b <= 32:
+                raise ValueError('PKCS7 block must be between 1 and 32 bytes')
+        except ValueError:
+            print('Not a valid integer')
+            return ('',-1,-1)
 
-def pad_pkcs7(message, block=16):
-    m, bl = check_pad_input(message, block)
-    assert(bl != -1), 'Invalid input.'
-    pad = bl
-    if len(m) % bl:
-        pad = bl - len(m) % bl
-    ret = m + bytes([pad]) * pad
-    return ret
+        try:
+            p = int(pad)
+            if not 0 <= pad <= 1:
+                raise ValueError('Bad Encrypt')
+        except ValueError:
+            print('Encrypt not a valid integer between 0 and 1')
+            return ('',-1,-1)
+        return (m,b,p)
 
-def unpad_pkcs7(message, block=16):
-    m, bl = check_pad_input(message, block)
+    def pkcs7_pad(m, bl=16):
+        pad = bl
+        if len(m) % bl:
+            pad = bl - len(m) % bl
+        ret = m + bytes([pad]) * pad
+        return ret
+
+    def pkcs7_unpad(m, bl=16):
+        assert(len(m) % int(bl) == 0), 'Message length not evenly divided.'
+        pad = int(m[-1])
+        assert(m[-pad:] == bytes((pad,))*pad), 'Incorrect padding.'
+        return m[:-pad]
+
+    m, bl, p = check_pad_input(message, block, pad)
     assert(bl != -1), 'Invalid input.'
-    assert(len(m) % int(bl) == 0), 'Message length not evenly divided.'
-    pad = int(m[-1])
-    assert(m[-pad:] == bytes((pad,))*pad), 'Incorrect padding.'
-    return m[:-pad]
+    if p:
+        return(pkcs7_pad(m,bl))
+    return(pkcs7_unpad(m,bl))
 
 def main(message, bl):
     print('Line: ' + str(message))
     print('blocklength: ' + str(bl))
-    ret = pad_pkcs7(message,bl)
+    ret = pkcs7_padding(message,bl,1)
     if ret:
         print('PKCS#7 padded: ')
         print(ret)
-        unret = unpad_pkcs7(ret,bl)
+        unret = pkcs7_padding(ret,bl,0)
         if unret:
             print('PKCS#7 unpadded: ')
             print(unret)
