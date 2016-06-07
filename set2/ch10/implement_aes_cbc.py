@@ -71,36 +71,39 @@ def aes_cbc(filename, key, iv, encrypt=1):
     def get_blocks(byte, bs):
         return [byte[i:i+bs] for i in range(0, len(byte), bs)]
 
+    def enc(text, key, iv):
+        ret = b''
+        pb = iv
+        crypt = pad_pkcs7(text)
+        cipher = AES.new(key, AES.MODE_ECB)
+        for bl in get_blocks(crypt, 16):
+            pb = cipher.encrypt(xor_bytes(bl, pb))
+            ret += pb
+        return base64.b64encode(ret)
+
+    def dec(text, key, iv):
+        ret = b''
+        pb = iv
+        crypt = base64.b64decode(text)
+        cipher = AES.new(key, AES.MODE_ECB)
+        for bl in get_blocks(crypt, 16):
+            ret += xor_bytes(cipher.decrypt(bl), pb)
+            pb = bl
+        return unpad_pkcs7(ret)
+
     f, k, i, e = check_aes_input(filename, key, iv, encrypt)
     assert(e is not -1), 'Invalid input.'
 
     crypt = ''
-    ret = b''
-    pb = i
 
     with open(f,'r') as infile:
         for line in infile:
             if not e:
                 line = line.rstrip()
             crypt += line
-
     if e:
-        crypt = pad_pkcs7(crypt)
-    else:
-        crypt = base64.b64decode(crypt)
-
-    cipher = AES.new(k, AES.MODE_ECB)
-    for bl in get_blocks(crypt, 16):
-        if e:
-            pb = cipher.encrypt(xor_bytes(bl, pb))
-            ret += pb
-        else:
-            ret += xor_bytes(cipher.decrypt(bl), pb)
-            pb = bl
-    
-    if not e:
-        return unpad_pkcs7(ret)
-    return base64.b64encode(ret)
+        return enc(crypt, k, i)
+    return dec(crypt, k, i)
 
 def main(filename, key, iv):
     print('Input File: ' + str(filename))
