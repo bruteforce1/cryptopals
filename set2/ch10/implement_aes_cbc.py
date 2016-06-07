@@ -64,29 +64,37 @@ def check_aes_input(filename, key, iv, encrypt):
 
 def aes_cbc(filename, key, iv, encrypt=1):
 
-    def xor_bytes(b1, b2):
-        return b''.join(bytes([a ^ b]) for a,b in zip(b1,b2[:len(b1)]))
+    def check_aes_input(filename, key, iv, encrypt):
+        if not os.path.isfile(filename):
+            print(filename + ' is not a valid file.')
+            return ('', b'', b'', -1)
 
-    def get_blocks(byte, bs):
-        return [byte[i:i+bs] for i in range(0, len(byte), bs)]
+        if type(key).__name__ == 'str':
+            k = key.encode('utf-8')
+        elif type(key).__name__ == 'bytes':
+            k = key
+        else:
+            print('key is unexpected type.')
+            return ('', b'', b'', -1)
+        assert(len(k) == 16), 'Invalid key length'
 
-    def make_b64_printable(enc):
-        ret = b''
-        for b in get_blocks(enc, 60):
-            ret += b
-            ret += b'\n'
-        return ret
-    
-    def enc(text, key, iv):
-        ret = b''
-        pb = iv
-        crypt = pad_pkcs7(text)
-        cipher = AES.new(key, AES.MODE_ECB)
-        for bl in get_blocks(crypt, 16):
-            pb = cipher.encrypt(xor_bytes(bl, pb))
-            ret += pb
-        ret = base64.b64encode(ret)
-        return make_b64_printable(ret)
+        if type(iv).__name__ == 'str':
+            i = iv.encode('utf-8')
+        elif type(iv).__name__ == 'bytes':
+            i = iv
+        else:
+            print('IV is unexpected type.')
+            return ('', b'', b'', -1)
+        assert(len(i) == 16), 'Invalid IV length'
+
+        try:
+            e = int(encrypt)
+            if not 0 <= encrypt <= 1:
+                raise ValueError('Bad Encrypt')
+        except ValueError:
+            print('Encrypt not a valid integer between 0 and 1')
+            return ('', b'', b'', -1)
+        return (filename, k, i, e)
 
     def dec(text, key, iv):
         ret = b''
@@ -98,6 +106,30 @@ def aes_cbc(filename, key, iv, encrypt=1):
             pb = bl
         return unpad_pkcs7(ret)
 
+    def enc(text, key, iv):
+        ret = b''
+        pb = iv
+        crypt = pad_pkcs7(text)
+        cipher = AES.new(key, AES.MODE_ECB)
+        for bl in get_blocks(crypt, 16):
+            pb = cipher.encrypt(xor_bytes(bl, pb))
+            ret += pb
+        ret = base64.b64encode(ret)
+        return make_b64_printable(ret)
+
+    def get_blocks(byte, bs):
+        return [byte[i:i+bs] for i in range(0, len(byte), bs)]
+
+    def make_b64_printable(enc):
+        ret = b''
+        for b in get_blocks(enc, 60):
+            ret += b
+            ret += b'\n'
+        return ret
+
+    def xor_bytes(b1, b2):
+        return b''.join(bytes([a ^ b]) for a,b in zip(b1,b2[:len(b1)]))
+    
     f, k, i, e = check_aes_input(filename, key, iv, encrypt)
     assert(e is not -1), 'Invalid input.'
 
