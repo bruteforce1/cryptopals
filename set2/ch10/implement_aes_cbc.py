@@ -27,101 +27,29 @@ from Crypto.Cipher import AES
 import os
 import string
 import sys
-sys.path.insert(0, '../')
-from set2_util import pkcs7_padding
-
-def aes_cbc(filename, key, iv, encrypt=1):
-
-    def check_aes_input(filename, key, iv, encrypt):
-        if not os.path.isfile(filename):
-            print(filename + ' is not a valid file.')
-            return ('', b'', b'', -1)
-
-        if type(key).__name__ == 'str':
-            k = key.encode('utf-8')
-        elif type(key).__name__ == 'bytes':
-            k = key
-        else:
-            print('key is unexpected type.')
-            return ('', b'', b'', -1)
-        assert(len(k) == 16), 'Invalid key length'
-
-        if type(iv).__name__ == 'str':
-            i = iv.encode('utf-8')
-        elif type(iv).__name__ == 'bytes':
-            i = iv
-        else:
-            print('IV is unexpected type.')
-            return ('', b'', b'', -1)
-        assert(len(i) == 16), 'Invalid IV length'
-
-        try:
-            e = int(encrypt)
-            if not 0 <= encrypt <= 1:
-                raise ValueError('Bad Encrypt')
-        except ValueError:
-            print('Encrypt not a valid integer between 0 and 1')
-            return ('', b'', b'', -1)
-        return (filename, k, i, e)
-
-    def dec(text, key, iv):
-        ret = b''
-        pb = iv
-        crypt = base64.b64decode(text)
-        cipher = AES.new(key, AES.MODE_ECB)
-        for bl in get_blocks(crypt, 16):
-            ret += xor_bytes(cipher.decrypt(bl), pb)
-            pb = bl
-        return pkcs7_padding(ret,16,0)
-
-    def enc(text, key, iv):
-        ret = b''
-        pb = iv
-        crypt = pkcs7_padding(text,16,1)
-        cipher = AES.new(key, AES.MODE_ECB)
-        for bl in get_blocks(crypt, 16):
-            pb = cipher.encrypt(xor_bytes(bl, pb))
-            ret += pb
-        ret = base64.b64encode(ret)
-        return make_b64_printable(ret)
-
-    def get_blocks(byte, bs):
-        return [byte[i:i+bs] for i in range(0, len(byte), bs)]
-
-    def make_b64_printable(enc):
-        ret = b''
-        for b in get_blocks(enc, 60):
-            ret += b
-            ret += b'\n'
-        return ret
-
-    def xor_bytes(b1, b2):
-        return b''.join(bytes([a ^ b]) for a,b in zip(b1,b2[:len(b1)]))
-    
-    f, k, i, e = check_aes_input(filename, key, iv, encrypt)
-    assert(e is not -1), 'Invalid input.'
-
-    crypt = ''
-
-    with open(f,'r') as infile:
-        for line in infile:
-            if not e:
-                line = line.rstrip()
-            crypt += line
-    if e:
-        return enc(crypt, k, i)
-    return dec(crypt, k, i)
+sys.path.insert(0, '../../utils')
+from cpset2 import aes_cbc
 
 def main(filename, key, iv):
     print('Input File: ' + str(filename))
     print('Key: ' + str(key))
     print('IV: ' + str(iv))
-    ret = aes_cbc(filename, key, iv, 0)
+    crypt = ''
+
+    if not os.path.isfile(filename):
+        print(filename + ' is not a valid file.')
+        return -1
+    
+    with open(filename,'r') as infile:
+        for line in infile:
+            crypt += line
+
+    ret = aes_cbc(crypt, key, iv, 0)
     if ret:
         print('Decrypted Contents in: ' + filename + '.dec')
         with open(filename + '.dec', 'w') as tf:
             tf.write(ret.decode('utf-8'))
-        unret = aes_cbc(filename + '.dec', key, iv)
+        unret = aes_cbc(ret, key, iv)
         if unret:
             print('Encrypted Contents in: ' + filename + '.enc')
             with open(filename + '.enc', 'w') as tf:
