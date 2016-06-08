@@ -22,53 +22,8 @@ So: pad any block to a specific block length, by appending the number
 import argparse
 import string
 import sys
-
-def pkcs7_padding(message, block=16, pad=1):
-
-    def check_pad_input(message,bl,pad):
-        if type(message).__name__ == 'str':
-            m = message.encode('utf-8')
-        elif type(message).__name__ == 'bytes':
-            m = message
-        else:
-            print('message is unexpected type.')
-            return ('',-1,-1)
-    
-        try: 
-            b = int(bl)
-            if not 1 < b and b <= 32:
-                raise ValueError('PKCS7 block must be between 1 and 32 bytes')
-        except ValueError:
-            print('Not a valid integer')
-            return ('',-1,-1)
-
-        try:
-            p = int(pad)
-            if not 0 <= pad <= 1:
-                raise ValueError('Bad Encrypt')
-        except ValueError:
-            print('Encrypt not a valid integer between 0 and 1')
-            return ('',-1,-1)
-        return (m,b,p)
-
-    def pkcs7_pad(m, bl=16):
-        pad = bl
-        if len(m) % bl:
-            pad = bl - len(m) % bl
-        ret = m + bytes([pad]) * pad
-        return ret
-
-    def pkcs7_unpad(m, bl=16):
-        assert(len(m) % int(bl) == 0), 'Message length not evenly divided.'
-        pad = int(m[-1])
-        assert(m[-pad:] == bytes((pad,))*pad), 'Incorrect padding.'
-        return m[:-pad]
-
-    m, bl, p = check_pad_input(message, block, pad)
-    assert(bl != -1), 'Invalid input.'
-    if p:
-        return(pkcs7_pad(m,bl))
-    return(pkcs7_unpad(m,bl))
+sys.path.insert(0, '../../utils')
+from cpset2 import pkcs7_padding
 
 def main(message, bl):
     print('Line: ' + str(message))
