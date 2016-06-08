@@ -115,24 +115,16 @@ def aes_cbc(message, key, iv, encrypt=1):
         for bl in get_blocks(crypt, 16):
             pb = cipher.encrypt(xor_bytes(bl, pb))
             ret += pb
-        ret = base64.b64encode(ret)
-        return make_b64_printable(ret)
+        return base64.b64encode(ret)
 
     def get_blocks(byte, bs):
         return [byte[i:i+bs] for i in range(0, len(byte), bs)]
-
-    def make_b64_printable(enc):
-        ret = b''
-        for b in get_blocks(enc, 60):
-            ret += b
-            ret += b'\n'
-        return ret
 
     def xor_bytes(b1, b2):
         return b''.join(bytes([a ^ b]) for a,b in zip(b1,b2[:len(b1)]))
     
     crypt, k, i, e = check_aes_input(message, key, iv, encrypt)
-    assert(e is not -1), 'Invalid input.'
+    assert(e != -1), 'Invalid input.'
 
     if e:
         return enc(crypt, k, i)
@@ -140,7 +132,7 @@ def aes_cbc(message, key, iv, encrypt=1):
 
 def aes_ecb(message, key, encrypt=1):
 
-    def check_aes_input(message, key, iv, encrypt):
+    def check_aes_input(message, key, encrypt):
         if type(message).__name__ == 'str':
             m = message.encode('utf-8')
         elif type(message).__name__ == 'bytes':
@@ -180,8 +172,28 @@ def aes_ecb(message, key, encrypt=1):
         return base64.b64encode(cry)
 
     crypt, k, e = check_aes_input(message, key, encrypt)
-    assert(e is not -1), 'Invalid input.'
+    assert(e != -1), 'Invalid input.'
 
     if e:
         return enc(crypt, k)
     return dec(crypt, k)
+
+def make_b64_printable(enc):
+    ret = b''
+    blocks = [enc[i:i+60] for i in range(0, len(enc), 60)]
+    for b in blocks:
+        ret += b
+        ret += b'\n'
+    return ret
+
+def test_aes_ecb(ct):
+    blocks = []
+    for x in range(32,len(ct),32):
+        blocks.append(ct[x-32:x])
+    blocks.sort()
+    ret = 0
+    for y in range(1,len(blocks)):
+        if blocks[y-1] == blocks[y]:
+            ret = 1
+    return ret
+
