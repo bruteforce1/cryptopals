@@ -46,7 +46,7 @@ def encryption_oracle(text):
     elif type(message).__name__ == 'bytes':
         t = text
     else:
-        return b''
+        raise TypeError('Bad type passed to encryption_oracle')
 
     key = gen_random_bytes()
     bef = gen_random_bytes(random.randint(5,10))
