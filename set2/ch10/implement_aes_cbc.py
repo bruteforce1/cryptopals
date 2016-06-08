@@ -22,8 +22,6 @@ The file here is intelligible (somewhat) when CBC decrypted against
 """
 
 import argparse
-import base64
-from Crypto.Cipher import AES
 import os
 import string
 import sys
