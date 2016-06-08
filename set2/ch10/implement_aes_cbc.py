@@ -26,7 +26,7 @@ import os
 import string
 import sys
 sys.path.insert(0, '../../utils')
-from cpset2 import aes_cbc
+from cpset2 import aes_cbc, make_b64_printable
 
 def main(filename, key, iv):
     print('Input File: ' + str(filename))
@@ -47,7 +47,7 @@ def main(filename, key, iv):
         print('Decrypted Contents in: ' + filename + '.dec')
         with open(filename + '.dec', 'w') as tf:
             tf.write(ret.decode('utf-8'))
-        unret = aes_cbc(ret, key, iv)
+        unret = make_b64_printable(aes_cbc(ret, key, iv))
         if unret:
             print('Encrypted Contents in: ' + filename + '.enc')
             with open(filename + '.enc', 'w') as tf:
