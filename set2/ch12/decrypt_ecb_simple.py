@@ -69,11 +69,11 @@ random.seed(1)
 def convert_to_bytes(text):
     if type(text).__name__ == 'str':
         t = text.encode('utf-8')
-    elif type(message).__name__ == 'bytes':
+    elif type(text).__name__ == 'bytes':
         t = text
     else:
         raise TypeError('Bad type passed to encryption_oracle')
-
+    return t
 
 def gen_random_bytes(block=16):
     if not 1 <= block <= 32:
@@ -81,13 +81,8 @@ def gen_random_bytes(block=16):
     return bytes(random.randint(0,255) for _ in range(block))
 
 def encryption_oracle(text, crypt, key):
-    t = convert_to_bytes(text)
-    c = convert_to_bytes(crypt)
-    k = convert_to_bytes(key)
-
-    pt = t + c
-    ret = aes_ecb(pt, key)
-    return ret
+    return aes_ecb(convert_to_bytes(text) + convert_to_bytes(crypt), 
+                   convert_to_bytes(key))
 
 def main(filename):
     print('Input File: ' + str(filename))
@@ -103,9 +98,9 @@ def main(filename):
         for line in infile:
             crypt += line
 
-    ans = encryption_oracle("AAAAAAAA",crypt,key)
+    ans = encryption_oracle("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",crypt,key)
     if ans:
-        print('AES Mode Decrypted!')
+        print(ans)
         return 0
     print('Fail.')
     return -1
