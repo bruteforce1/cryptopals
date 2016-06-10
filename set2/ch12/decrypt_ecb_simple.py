@@ -70,7 +70,7 @@ random.seed(1)
 GLOBAL_KEY = gen_random_bytes(16)
 
 def check_oracle_ecb(block):
-    if test_aes_ecb('A' * block * 10) != 0:
+    if test_aes_ecb('A' * block * 10):
         return True
     return False
 
