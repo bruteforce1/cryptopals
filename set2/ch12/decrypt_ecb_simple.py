@@ -57,14 +57,17 @@ Here's roughly how:
 """
 
 import argparse
+import base64
+import math
 import os
 import random
 import string
 import sys
 sys.path.insert(0, '../../utils')
-from cpset2 import aes_ecb
+from cpset2 import aes_ecb, gen_random_bytes, test_aes_ecb
 
 random.seed(1)
+GLOBAL_KEY = gen_random_bytes(16)
 
 def convert_to_bytes(text):
     if type(text).__name__ == 'str':
@@ -75,30 +78,22 @@ def convert_to_bytes(text):
         raise TypeError('Bad type passed to encryption_oracle')
     return t
 
-def gen_random_bytes(block=16):
-    if not 1 <= block <= 32:
-        return b''
-    return bytes(random.randint(0,255) for _ in range(block))
+def get_oracle_block_size():
+    for i in range(1,254):
+        if test_aes_ecb(encryption_oracle('A' * i)):
+            return math.ceil(i/3)
 
-def encryption_oracle(text, crypt, key):
-    return aes_ecb(convert_to_bytes(text) + convert_to_bytes(crypt), 
-                   convert_to_bytes(key))
+def encryption_oracle(text):
+    crypt = 'Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg'
+    crypt += 'aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq'
+    crypt += 'dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg'
+    crypt += 'YnkK'
+    return aes_ecb(convert_to_bytes(text) + base64.b64decode(crypt), 
+                   convert_to_bytes(GLOBAL_KEY))
 
-def main(filename):
-    print('Input File: ' + str(filename))
-    key = gen_random_bytes(16)
-    print('Key: ' + str(key))
-    crypt = ''
-
-    if not os.path.isfile(filename):
-        print(filename + ' is not a valid file.')
-        return -1
-
-    with open(filename,'r') as infile:
-        for line in infile:
-            crypt += line
-
-    ans = encryption_oracle("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",crypt,key)
+def main():
+    #ans = encryption_oracle("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",crypt)
+    ans = get_oracle_block_size()
     if ans:
         print(ans)
         return 0
@@ -110,9 +105,6 @@ if __name__ == '__main__':
         description='Uses an oracle to decrypt AES in ECB mode, one byte at \
         a time.  This is the simple approach.'
         )
-    parser.add_argument('-f', '--inputfile', help='opt. file encrypted \
-        with AES in ECB mode',
-        default='./12.txt')
     args = parser.parse_args()
 
-    sys.exit(main(args.inputfile))
+    sys.exit(main())

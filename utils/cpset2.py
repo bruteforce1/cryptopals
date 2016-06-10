@@ -9,6 +9,7 @@ This module is used to define functions as they are worked through in
 import base64
 from Crypto.Cipher import AES
 import os
+import random
 import string
 import sys
 
@@ -196,4 +197,9 @@ def test_aes_ecb(ct):
         if blocks[y-1] == blocks[y]:
             ret = 1
     return ret
+
+def gen_random_bytes(block=16):
+    if not 1 <= block <= 32:
+        return b''
+    return bytes(random.randint(0,255) for _ in range(block))
 
