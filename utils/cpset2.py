@@ -78,7 +78,9 @@ def aes_cbc(message, key, iv, encrypt=1):
         else:
             print('key is unexpected type.')
             return (b'', b'', b'', -1)
-        assert(len(k) == 16), 'Invalid key length'
+        if len(k) != 16 and len(k) != 24 and len(k) != 32:
+            print('Invalid key length')
+            return (b'', b'', b'', -1)
 
         if type(iv).__name__ == 'str':
             i = iv.encode('utf-8')
@@ -149,7 +151,10 @@ def aes_ecb(message, key, encrypt=1):
         else:
             print('key is unexpected type.')
             return (b'',b'',-1)
-        assert(len(k) == 16), 'Invalid key length'
+        if len(k) != 16 and len(k) != 24 and len(k) != 32:
+            print('Invalid key length')
+            print(len(k))
+            return (b'', b'', -1)
 
         try:
             e = int(encrypt)

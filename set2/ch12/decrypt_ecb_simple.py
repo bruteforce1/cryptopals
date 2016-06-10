@@ -79,9 +79,24 @@ def convert_to_bytes(text):
     return t
 
 def get_oracle_block_size():
-    for i in range(1,254):
-        if test_aes_ecb(encryption_oracle('A' * i)):
-            return math.ceil(i/3)
+    l = 0
+    resize = 0
+    cnt = 0
+    for i in range(1,100):
+        test = b'A' * i
+        tl = len(encryption_oracle(test))
+        if l == 0:
+            l = tl
+        elif resize == 0:
+            if tl != l:
+                cnt = 1
+                l = tl
+                resize = 1
+        elif l == tl:
+            cnt += 1
+        else:
+            return cnt
+    return -1
 
 def encryption_oracle(text):
     crypt = 'Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg'
