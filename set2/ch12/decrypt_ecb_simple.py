@@ -69,6 +69,11 @@ from cpset2 import aes_ecb, gen_random_bytes, test_aes_ecb
 random.seed(1)
 GLOBAL_KEY = gen_random_bytes(16)
 
+def check_oracle_ecb(block):
+    if test_aes_ecb('A' * block * 10) != 0:
+        return True
+    return False
+
 def convert_to_bytes(text):
     if type(text).__name__ == 'str':
         t = text.encode('utf-8')
@@ -108,10 +113,13 @@ def encryption_oracle(text):
 
 def main():
     #ans = encryption_oracle("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",crypt)
-    ans = get_oracle_block_size()
-    if ans:
-        print(ans)
-        return 0
+    bs = get_oracle_block_size()
+    if bs:
+        print(bs)
+        ecb = check_oracle_ecb(bs)
+        if ecb:
+            print('ECB detected!')
+            return 0
     print('Fail.')
     return -1
 
