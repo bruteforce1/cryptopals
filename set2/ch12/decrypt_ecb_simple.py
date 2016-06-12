@@ -84,27 +84,33 @@ def convert_to_bytes(text):
     return t
 
 def decrypt_ecb(block):
-    ans = ''
-    b = 0
-    ctlen = len(encryption_oracle(''))
+    ans = b''
+    mult = 0
+    ctlen = len(base64.b64decode(encryption_oracle('')))
 
     while len(ans) < ctlen:
-        pad = b'A' * (block - (len(ans)%block + 1)) + b'R'
+        if len(ans) % block == 0:
+            mult += 1
+        pad = b'A' * (block - (len(ans)%block + 1))
         oracle = encryption_oracle(pad)
-        print('Oracle pad: ' + str(pad))
-        print('Oracle: ' + str(oracle))
+        found = 0
         for test in range(0,255):
-            te = pad + bytes([test])
+            te = pad + ans + bytes([test])
             enc = encryption_oracle(te)
-            print('Test: ' + str(te))
-            print(enc[:len(enc)-ctlen])
-            if enc[:len(enc)-ctlen] == oracle[:len(enc)-ctlen]:
-                ans += chr(test)
-                return chr(test)
-        break
-        #one block at a time
-        #until we validate pkcs7 padding
-    return ''
+            if base64.b64decode(enc)[:block*mult] == base64.b64decode(oracle)[:block*mult]:
+                ans += bytes([test])
+                found = 1
+                break
+        if not found:
+            break
+    pad = int(ans[-1])
+    if ans[-pad:] != bytes((pad,))*pad:
+        print('Issue removing final pad.')
+        print('Decrypted text: ')
+        print(ans)
+        return ''
+    
+    return ans[:-pad].decode('utf-8')
 
 def get_oracle_block_size():
     l = 0
@@ -139,15 +145,12 @@ def encryption_oracle(text):
     crypt += 'aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq'
     crypt += 'dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg'
     crypt += 'YnkK'
-    print(convert_to_bytes(text) + base64.b64decode(crypt))
     return aes_ecb(convert_to_bytes(text) + base64.b64decode(crypt), 
-                   convert_to_bytes(GLOBAL_KEY))
+                   convert_to_bytes(GLOBAL_KEY),1)
 
 def main():
-    print(encryption_oracle(''))
     ans = manage_decrypt_aes_ecb()
     if ans:
-        print('Decrypted: ')
         print(ans)
         return 0
     print('Fail.')
