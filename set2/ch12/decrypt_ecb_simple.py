@@ -89,7 +89,7 @@ def decrypt_ecb(block):
     ctlen = len(encryption_oracle(''))
 
     while len(ans) < ctlen:
-        pad = b'A' * (block - (len(ans)%block + 1))
+        pad = b'A' * (block - (len(ans)%block + 1)) + b'R'
         oracle = encryption_oracle(pad)
         print('Oracle pad: ' + str(pad))
         print('Oracle: ' + str(oracle))
