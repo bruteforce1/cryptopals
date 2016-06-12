@@ -69,7 +69,7 @@ from cpset2 import aes_ecb, gen_random_bytes, test_aes_ecb
 random.seed(1)
 GLOBAL_KEY = gen_random_bytes(16)
 
-def check_oracle_ecb(block):
+def is_oracle_ecb(block):
     if test_aes_ecb('A' * block * 10):
         return True
     return False
@@ -82,6 +82,9 @@ def convert_to_bytes(text):
     else:
         raise TypeError('Bad type passed to encryption_oracle')
     return t
+
+def decrypt_ecb():
+    return ''
 
 def get_oracle_block_size():
     l = 0
@@ -103,6 +106,14 @@ def get_oracle_block_size():
             return cnt
     return -1
 
+def manage_decrypt_aes_ecb():
+    bs = get_oracle_block_size()
+    if bs:
+        ecb = is_oracle_ecb(bs)
+        if ecb:
+            return decrypt_ecb()
+    return ''
+
 def encryption_oracle(text):
     crypt = 'Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg'
     crypt += 'aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq'
@@ -113,13 +124,9 @@ def encryption_oracle(text):
 
 def main():
     #ans = encryption_oracle("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",crypt)
-    bs = get_oracle_block_size()
-    if bs:
-        print(bs)
-        ecb = check_oracle_ecb(bs)
-        if ecb:
-            print('ECB detected!')
-            return 0
+    if manage_decrypt_aes_ecb():
+        print('Success!')
+        return 0
     print('Fail.')
     return -1
 
