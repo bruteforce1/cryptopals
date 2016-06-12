@@ -83,7 +83,27 @@ def convert_to_bytes(text):
         raise TypeError('Bad type passed to encryption_oracle')
     return t
 
-def decrypt_ecb():
+def decrypt_ecb(block):
+    ans = ''
+    b = 0
+    ctlen = len(encryption_oracle(''))
+
+    while len(ans) < ctlen:
+        pad = b'A' * (block - (len(ans)%block + 1))
+        oracle = encryption_oracle(pad)
+        print('Oracle pad: ' + str(pad))
+        print('Oracle: ' + str(oracle))
+        for test in range(0,255):
+            te = pad + bytes([test])
+            enc = encryption_oracle(te)
+            print('Test: ' + str(te))
+            print(enc[:len(enc)-ctlen])
+            if enc[:len(enc)-ctlen] == oracle[:len(enc)-ctlen]:
+                ans += chr(test)
+                return chr(test)
+        break
+        #one block at a time
+        #until we validate pkcs7 padding
     return ''
 
 def get_oracle_block_size():
@@ -111,7 +131,7 @@ def manage_decrypt_aes_ecb():
     if bs:
         ecb = is_oracle_ecb(bs)
         if ecb:
-            return decrypt_ecb()
+            return decrypt_ecb(bs)
     return ''
 
 def encryption_oracle(text):
@@ -119,13 +139,16 @@ def encryption_oracle(text):
     crypt += 'aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq'
     crypt += 'dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg'
     crypt += 'YnkK'
+    print(convert_to_bytes(text) + base64.b64decode(crypt))
     return aes_ecb(convert_to_bytes(text) + base64.b64decode(crypt), 
                    convert_to_bytes(GLOBAL_KEY))
 
 def main():
-    #ans = encryption_oracle("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",crypt)
-    if manage_decrypt_aes_ecb():
-        print('Success!')
+    print(encryption_oracle(''))
+    ans = manage_decrypt_aes_ecb()
+    if ans:
+        print('Decrypted: ')
+        print(ans)
         return 0
     print('Fail.')
     return -1
