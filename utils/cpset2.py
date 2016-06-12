@@ -14,6 +14,12 @@ import string
 import sys
 
 def pkcs7_padding(message, block=16, pad=1):
+    class PaddingError(Exception):
+        def __init__(self, value):
+            self.value = value
+        def __str__(self):
+            return repr(self.value)
+
 
     def check_pad_input(message,bl,pad):
         if type(message).__name__ == 'str':
@@ -49,9 +55,11 @@ def pkcs7_padding(message, block=16, pad=1):
         return ret
 
     def pkcs7_unpad(m, bl=16):
-        assert(len(m) % int(bl) == 0), 'Message length not evenly divided.'
+        if len(m) % int(bl) != 0:
+            raise PaddingError('Message length not evenly divided.')
         pad = int(m[-1])
-        assert(m[-pad:] == bytes((pad,))*pad), 'Incorrect padding.'
+        if m[-pad:] != bytes((pad,))*pad:
+            raise PaddingError('Incorrect padding.')
         return m[:-pad]
 
     m, bl, p = check_pad_input(message, block, pad)
@@ -175,7 +183,7 @@ def aes_ecb(message, key, encrypt=1):
         cry = pkcs7_padding(ct,16,1)
         cipher = AES.new(key, AES.MODE_ECB)
         c = cipher.encrypt(cry)
-        return base64.b64encode(cry)
+        return base64.b64encode(c)
 
     crypt, k, e = check_aes_input(message, key, encrypt)
     assert(e != -1), 'Invalid input.'
