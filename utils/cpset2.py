@@ -8,7 +8,6 @@ This module is used to define functions as they are worked through in
 
 import base64
 from Crypto.Cipher import AES
-import os
 import random
 import string
 import sys
