@@ -1,0 +1,16 @@
+#set1
+venv/bin/python3 set1/ch1/hextob64.py 49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d
+venv/bin/python3 set1/ch2/fixedxor.py
+venv/bin/python3 set1/ch3/singlebytexor.py
+venv/bin/python3 set1/ch4/findsinglebytexor.py set1/ch4/4.txt
+venv/bin/python3 set1/ch5/repeatingkeyxor.py
+venv/bin/python3 set1/ch6/breakrepeatedkeyxor.py set1/ch6/6.txt
+venv/bin/python3 set1/ch7/decrypt_aes_ecb.py set1/ch7/7.txt
+venv/bin/python3 set1/ch8/detect_aes_ecb.py set1/ch8/8.txt
+
+#set2
+venv/bin/python3 set2/ch09/implement_pkcs7.py
+venv/bin/python3 set2/ch10/implement_aes_cbc.py 
+venv/bin/python3 set2/ch11/detect_ecb_cbc.py
+venv/bin/python3 set2/ch12/decrypt_ecb_simple.py
+
