@@ -51,7 +51,7 @@ import binascii
 import math
 import string
 import sys
-sys.path.insert(0, '../ch3')
+sys.path.insert(0, 'set1/ch3')
 from singlebytexor import find_key
 
 def decrypt_repeated_key_xor(filename):

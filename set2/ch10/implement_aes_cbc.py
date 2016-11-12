@@ -25,7 +25,7 @@ import argparse
 import os
 import string
 import sys
-sys.path.insert(0, '../../utils')
+sys.path.insert(0, './utils')
 from cpset2 import aes_cbc, make_b64_printable
 
 def main(filename, key, iv):
@@ -61,7 +61,7 @@ if __name__ == '__main__':
         description='Implements AES CBC encryption and decryption manually.')
     parser.add_argument('-f', '--inputfile', help='opt. file encrypted \
         with AES in CBC mode', 
-        default='./10.txt')
+        default='set2/ch10/10.txt')
     parser.add_argument('-i', '--iv', help='opt. 16 byte initializtion \
         vector',
         default=chr(0) * 16)

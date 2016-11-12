@@ -22,7 +22,7 @@ So: pad any block to a specific block length, by appending the number
 import argparse
 import string
 import sys
-sys.path.insert(0, '../../utils')
+sys.path.insert(0, './utils')
 from cpset2 import pkcs7_padding
 
 def main(message, bl):

@@ -14,7 +14,7 @@ import argparse
 import base64
 import string
 import sys
-sys.path.insert(0, '../ch3')
+sys.path.insert(0, 'set1/ch3')
 from singlebytexor import find_key
 
 def find_msg(filename):
@@ -29,8 +29,8 @@ def find_msg(filename):
                 keys = (line, linekeys[0], linekeys[1])
     return keys
 
-def main():
-    ret = find_msg('./4.txt')
+def main(filename):
+    ret = find_msg(filename)
     if ret[0]:
         print('Line: ' + ret[0] + '\nKey: ' + ret[1] + '\nPT: ' + ret[2])
         return 0
@@ -42,5 +42,6 @@ if __name__ == "__main__":
         description='Searches through list of encrypted data to find string \
         encrypted by repeating key xor.'
         )
+    parser.add_argument('filename', help='encrypted input file')
     args = parser.parse_args()
-    sys.exit(main())
+    sys.exit(main(args.filename))

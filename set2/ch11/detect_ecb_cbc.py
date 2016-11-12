@@ -30,7 +30,7 @@ import argparse
 import random
 import string
 import sys
-sys.path.insert(0, '../../utils')
+sys.path.insert(0, './utils')
 from cpset2 import aes_ecb, aes_cbc, test_aes_ecb
 
 random.seed()
