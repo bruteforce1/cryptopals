@@ -1,2 +1,6 @@
 # Ignore virtualenv
 venv/
+set1/ch3/__pycache__/
+set2/ch10/10.txt.dec
+set2/ch10/10.txt.enc
+utils/__pycache__/
