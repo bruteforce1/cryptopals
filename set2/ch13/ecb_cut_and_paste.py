@@ -49,28 +49,77 @@ Using only the user input to profile_for() (as an oracle to generate
 """
 
 import argparse
+import random
+import re
 import string
 import sys
+sys.path.insert(0, './utils')
+from cpset2 import aes_ecb, gen_random_bytes, test_aes_ecb
+
+UID = 10
+random.seed(1)
+GLOBAL_KEY = gen_random_bytes(16)
 
 def decode_profile(cookie):
-    return ''
+    profile = []
+    items = cookie.split('&')
+    for item in items:
+        if '=' not in item:
+            return ''
+        tup = [item.split('=')[0], item.split('=')[1]]
+        profile.append(tup)
+    return profile
 
 def encode_profile(profile):
-    return ''
+    encprofile = ''
+    for item in profile:
+        if encprofile:
+            encprofile = encprofile + '&' + str(item[0]) \
+                       + '=' + str(item[1])
+        else:
+            encprofile = str(item[0]) + '=' + str(item[1])
+    return encprofile
 
 def profile_for(email):
-    return ''
+    global UID
+    profile = []
+    newemail = re.sub('[=&]', '', email)
+
+    profile.append(['email', newemail])
+    profile.append(['uid', UID])
+    profile.append(['role', 'user'])
+    encprofile = encode_profile(profile)
+
+    UID = UID + 1
+
+    return encprofile
 
 def encrypt_profile(profile):
-    return b''
+    return aes_ecb(profile,GLOBAL_KEY,1)
 
-def decrypt_profile(enc):
-    return b''
+def decrypt_profile(profile):
+    return aes_ecb(profile,GLOBAL_KEY,0)
 
 def attacker():
+    #make up email.
+    #count 'email=' + email account, find pos of 16th char
+    #replace 16th char to end of email with 'admin' and pkcs7 padding
+    #encrypt modded email
+    #count rest of profile string after email account '&' and after
+    #set email name so that 'role=' is the end of the 2nd to last block
+    #replace last block with 'admin' block from first attempt
+    #test print encrypted profile and decrypted modded profile
+    #return above if role=admin
+    #return empty string otherwise
     return b''
 
 def main():
+    #prof = decode_profile('test2=test2&user=foo&name=blah')
+    #encode_profile(prof)
+    prof = profile_for('foo@bar.com')
+    enc = encrypt_profile(prof)
+    dec = decrypt_profile(enc)
+    print(dec)
     ans = attacker()
     if ans:
         print(ans)
