@@ -12,12 +12,19 @@ import random
 import string
 import sys
 
+class PaddingError(Exception):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)
+
+
 def pkcs7_padding(message, block=16, pad=1):
-    class PaddingError(Exception):
-        def __init__(self, value):
-            self.value = value
-        def __str__(self):
-            return repr(self.value)
+#    class PaddingError(Exception):
+#        def __init__(self, value):
+#            self.value = value
+#        def __str__(self):
+#            return repr(self.value)
 
 
     def check_pad_input(message,bl,pad):
