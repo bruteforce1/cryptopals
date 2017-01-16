@@ -58,10 +58,7 @@ Here's roughly how:
 
 import argparse
 import base64
-import math
-import os
 import random
-import string
 import sys
 sys.path.insert(0, './utils')
 from cpset2 import aes_ecb, gen_random_bytes, test_aes_ecb
@@ -69,10 +66,12 @@ from cpset2 import aes_ecb, gen_random_bytes, test_aes_ecb
 random.seed(1)
 GLOBAL_KEY = gen_random_bytes(16)
 
+
 def is_oracle_ecb(block):
     if test_aes_ecb('A' * block * 10):
         return True
     return False
+
 
 def convert_to_bytes(text):
     if type(text).__name__ == 'str':
@@ -82,6 +81,7 @@ def convert_to_bytes(text):
     else:
         raise TypeError('Bad type passed to encryption_oracle')
     return t
+
 
 def decrypt_ecb(block):
     ans = b''
@@ -112,6 +112,7 @@ def decrypt_ecb(block):
     
     return ans[:-pad].decode('utf-8')
 
+
 def get_oracle_block_size():
     l = 0
     resize = 0
@@ -132,6 +133,7 @@ def get_oracle_block_size():
             return cnt
     return -1
 
+
 def manage_decrypt_aes_ecb():
     bs = get_oracle_block_size()
     if bs:
@@ -139,6 +141,7 @@ def manage_decrypt_aes_ecb():
         if ecb:
             return decrypt_ecb(bs)
     return ''
+
 
 def encryption_oracle(text):
     crypt = 'Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg'
@@ -148,6 +151,7 @@ def encryption_oracle(text):
     return aes_ecb(convert_to_bytes(text) + base64.b64decode(crypt), 
                    convert_to_bytes(GLOBAL_KEY),1)
 
+
 def main():
     ans = manage_decrypt_aes_ecb()
     if ans:
@@ -155,6 +159,7 @@ def main():
         return 0
     print('Fail.')
     return -1
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
