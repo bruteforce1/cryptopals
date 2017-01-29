@@ -20,39 +20,41 @@ import string
 import binascii
 import sys
 
-def find_key(hexstr):
+
+def find_key(hex_str):
     keys = ('', '', '')
     score = 0
     try:
-        msg = binascii.unhexlify(hexstr.encode('utf-8'))
+        msg = binascii.unhexlify(hex_str.encode('utf-8'))
     except binascii.Error:
         print('Hexadecimal strings must be even length')
         return ''
 
     def get_score(s):
-        sscore = 0
+        s_score = 0
         for c in s:
             if c in string.ascii_letters or c == ' ' or c == '\n':
-                sscore += 1
+                s_score += 1
             elif c in string.punctuation or c in string.digits:
-                sscore -= 5
+                s_score -= 5
             else:
-                sscore -= 100
-        return sscore
+                s_score -= 100
+        return s_score
 
     def xor_key(msg, key, msglen):
-        testmsg = ''.join(chr(x ^ key) for x in msg)
-        sscore = get_score(testmsg)
-        if sscore > 0:
-            return (testmsg, sscore)
-        return ('', -1)
+        test_msg = ''.join(chr(y ^ key) for y in msg)
+        s_score = get_score(test_msg)
+        if s_score > 0:
+            return test_msg, s_score
+        return '', -1
 
     for x in range(1,255):
-        (test,testscore) = xor_key(msg,x,len(hexstr)/2)
-        if score < testscore:
-            score = testscore
+        test, test_score = xor_key(msg, x, len(hex_str) / 2)
+        if score < test_score:
+            score = test_score
             keys = (chr(x), test, score)
     return keys
+
 
 def main():
     ret = find_key(

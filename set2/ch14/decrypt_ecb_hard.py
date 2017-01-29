@@ -1,58 +1,23 @@
 #!/usr/bin/python3
 
 """
-Copy your oracle function to a new function that encrypts buffers under
- ECB mode using a consistent but unknown key (for instance, assign a
- single random key, once, to a global variable).
 
-Now take that same function and have it append to the plaintext,
- BEFORE ENCRYPTING, the following string:
+Take your oracle function from #12. Now generate a random count of
+ random bytes and prepend this string to every plaintext. You are now
+ doing:
 
-Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg
-aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq
-dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg
-YnkK
+AES-128-ECB(random-prefix || attacker-controlled 
+            || target-bytes, random-key)
 
-|-------------------------------------------|
-|Spoiler alert.                             |
-|                                           |
-|Do not decode this string now. Don't do it.|
-|-------------------------------------------|
+Same goal: decrypt the target-bytes.
 
-Base64 decode the string before appending it. Do not base64 decode the
- string by hand; make your code do it. The point is that you don't know
- its contents.
+Stop and think for a second.
 
-What you have now is a function that produces:
+What's harder than challenge #12 about doing this? How would you
+ overcome that obstacle? The hint is: you're using all the tools you
+ already have; no crazy math is required.
 
-AES-128-ECB(your-string || unknown-string, random-key)
-
-It turns out: you can decrypt "unknown-string" with repeated calls to
- the oracle function!
-
-Here's roughly how:
-
-    Feed identical bytes of your-string to the function 1 at a time ---
- start with 1 byte ("A"), then "AA", then "AAA" and so on. Discover the
- block size of the cipher. You know it, but do this step anyway.
-
-    Detect that the function is using ECB. You already know, but do
- this step anyways.
-
-    Knowing the block size, craft an input block that is exactly 1 byte
- short (for instance, if the block size is 8 bytes, make "AAAAAAA").
- Think about what the oracle function is going to put in that last byte
- position.
-
-    Make a dictionary of every possible last byte by feeding different
- strings to the oracle; for instance, "AAAAAAAA", "AAAAAAAB",
- "AAAAAAAC", remembering the first block of each invocation.
-
-    Match the output of the one-byte-short input to one of the entries
- in your dictionary. You've now discovered the first byte of
- unknown-string.
-
-    Repeat for the next byte.
+Think "STIMULUS" and "RESPONSE".
 
 """
 
@@ -70,7 +35,8 @@ random.seed(1)
 GLOBAL_KEY = gen_random_bytes(16)
 
 def is_oracle_ecb(block):
-    if test_aes_ecb('A' * block * 10):
+    enc = encryption_oracle('B' * block * 10)
+    if test_aes_ecb(enc,block):
         return True
     return False
 
@@ -86,13 +52,19 @@ def convert_to_bytes(text):
 def decrypt_ecb(block):
     ans = b''
     mult = 0
-    ctlen = len(base64.b64decode(encryption_oracle('')))
+    ora, enc = find_first_oracle(block)
+    ctlen = len(enc)
 
     while len(ans) < ctlen:
         if len(ans) % block == 0:
             mult += 1
-        pad = b'A' * (block - (len(ans)%block + 1))
-        oracle = encryption_oracle(pad)
+        pad = b'B' * (block) + b'A' * (block - (len(ans)%block + 1))
+        oracle = b''
+        while ora not in oracle:
+            oracle = encryption_oracle(pad)
+        print(ora)
+        print(oracle)
+        oracle = oracle.split(ora)[1]
         found = 0
         for test in range(0,255):
             te = pad + ans + bytes([test])
@@ -118,7 +90,7 @@ def get_oracle_block_size():
     cnt = 0
     for i in range(1,100):
         test = b'A' * i
-        tl = len(encryption_oracle(test))
+        tl = find_max_block_size(test)
         if l == 0:
             l = tl
         elif resize == 0:
@@ -132,6 +104,34 @@ def get_oracle_block_size():
             return cnt
     return -1
 
+def find_max_block_size(test):
+    l = 0
+    for i in range(1,256):
+        tl = len(encryption_oracle(test))
+        if l < tl:
+            l = tl
+    return l
+
+def find_first_oracle(block):
+    found = False
+    while not found:
+        enc = encryption_oracle(b'B' * (2*block))
+        if test_aes_ecb(enc):
+            found = True
+   
+    blocks = []
+    crypt = base64.b64decode(enc)
+    for x in range(block,len(crypt),block):
+        blocks.append(crypt[x-block:x])
+    blocks.sort()
+    for y in range(1,len(blocks)):
+        if blocks[y-1] == blocks[y]:
+            print(blocks[y])
+            print(b''.join(x for x in blocks[y+1:]))
+            return blocks[y], b''.join(x for x in blocks[y+1:])
+    return ''
+
+
 def manage_decrypt_aes_ecb():
     bs = get_oracle_block_size()
     if bs:
@@ -141,11 +141,13 @@ def manage_decrypt_aes_ecb():
     return ''
 
 def encryption_oracle(text):
+    oraprefix = gen_random_bytes(random.randrange(0,64))
     crypt = 'Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg'
     crypt += 'aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq'
     crypt += 'dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg'
     crypt += 'YnkK'
-    return aes_ecb(convert_to_bytes(text) + base64.b64decode(crypt), 
+    return aes_ecb(convert_to_bytes(oraprefix) + convert_to_bytes(text)
+                   + base64.b64decode(crypt), 
                    convert_to_bytes(GLOBAL_KEY),1)
 
 def main():

@@ -21,7 +21,8 @@ import argparse
 import sys
 import binascii
 
-def xorbinarystrings(str1, str2):
+
+def xor_binary_strings(str1, str2):
     if len(str1) != len(str2):
         print('XOR strings must be same length')
         return ''
@@ -31,11 +32,12 @@ def xorbinarystrings(str1, str2):
     bstr1 = binascii.unhexlify(str1)
     bstr2 = binascii.unhexlify(str2)
     return binascii.hexlify(
-        ''.join(chr(x ^ y) for x, y in zip(bstr1,bstr2)
+        ''.join(chr(x ^ y) for x, y in zip(bstr1, bstr2)
         ).encode('utf-8')).decode('utf-8')
 
+
 def main():
-    ret = xorbinarystrings('1c0111001f010100061a024b53535009181c', 
+    ret = xor_binary_strings('1c0111001f010100061a024b53535009181c',
                            '686974207468652062756c6c277320657965')
     print(ret)
     if ret == '746865206b696420646f6e277420706c6179':

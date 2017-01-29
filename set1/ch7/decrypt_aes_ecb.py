@@ -18,21 +18,18 @@ Easiest way: use OpenSSL::Cipher and give it AES-128-ECB as the cipher.
 import argparse
 import binascii
 from Crypto.Cipher import AES
-import string
 import sys
 
+
 def decrypt_aes_ecb(filename, key):
-
-    def decrypt_cipher_text(ct, key):
-        cipher = AES.new(key, AES.MODE_ECB)
-        return cipher.decrypt(ct).decode('utf-8')
-
     crypt = ''
-    with open(filename,'r') as f:
+    with open(filename, 'r') as f:
         for line in f:
             crypt += line.rstrip()
     cry = binascii.a2b_base64(crypt)
-    return decrypt_cipher_text(cry, key)
+    cipher = AES.new(key, AES.MODE_ECB)
+    return cipher.decrypt(cry).decode('utf-8')
+
 
 def main(filename, key):
     ans = decrypt_aes_ecb(filename, key)
@@ -49,10 +46,11 @@ if __name__ == '__main__':
         description='Takes a message encrypted with AES in ECB mode, and \
         decrypts it using a provided key.'
         )
-    parser.add_argument('inputfile', help='file with contents encrypted by \
-        AES ECB and base64 encoded')
+    parser.add_argument('-f', '--inputfile', help='opt. file with contents encrypted by \
+                        AES ECB and base64 encoded',
+                        default='7.txt')
     parser.add_argument('-k', '--key', help='opt. key',
-                    default='YELLOW SUBMARINE')
+                        default='YELLOW SUBMARINE')
     args = parser.parse_args()
 
     sys.exit(main(args.inputfile,args.key))

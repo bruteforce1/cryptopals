@@ -13,32 +13,32 @@ Remember that the problem with ECB is that it is stateless and
 """
 
 import argparse
-import binascii
-import string
 import sys
+
 
 def detect_aes_ecb(filename):
 
     def test_aes_ecb(ct):
         blocks = []
-        for x in range(32,len(ct),32):
+        for x in range(32, len(ct), 32):
             blocks.append(ct[x-32:x])
         blocks.sort()
         ret = 0
-        for y in range(1,len(blocks)):
+        for y in range(1, len(blocks)):
             if blocks[y-1] == blocks[y]:
                 ret += 1
         return ret
 
     tests = []
-    with open(filename,'r') as f:
+    with open(filename, 'r') as f:
         for line in f:
             test = line.rstrip()
-            tests.append((test,test_aes_ecb(test)))
+            tests.append((test, test_aes_ecb(test)))
     tests.sort(key=lambda x: x[1], reverse=True)
     if tests[0][1] is not 0:
         return tests[0][0]
     return '' ''
+
 
 def main(filename):
     ans = detect_aes_ecb(filename)
@@ -54,8 +54,9 @@ if __name__ == '__main__':
         description='Takes a file with a bunch of cipher texts, and finds \
         the line encrypted with AES in ECB mode.'
         )
-    parser.add_argument('inputfile', help='file with contents that contain \
-        one string encrypted by AES in ECB mode')
+    parser.add_argument('-f', '--inputfile', help='opt. file with contents that contain \
+                        one string encrypted by AES in ECB mode',
+                        default='8.txt')
     args = parser.parse_args()
 
     sys.exit(main(args.inputfile))

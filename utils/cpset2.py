@@ -9,127 +9,127 @@ This module is used to define functions as they are worked through in
 import base64
 from Crypto.Cipher import AES
 import random
-import string
-import sys
+
 
 class PaddingError(Exception):
     def __init__(self, value):
         self.value = value
+
     def __str__(self):
         return repr(self.value)
 
 
 def pkcs7_padding(message, block=16, pad=1):
-#    class PaddingError(Exception):
-#        def __init__(self, value):
-#            self.value = value
-#        def __str__(self):
-#            return repr(self.value)
+    #    class PaddingError(Exception):
+    #        def __init__(self, value):
+    #            self.value = value
+    #        def __str__(self):
+    #            return repr(self.value)
 
-
-    def check_pad_input(message,bl,pad):
-        if type(message).__name__ == 'str':
-            m = message.encode('utf-8')
-        elif type(message).__name__ == 'bytes':
-            m = message
+    def check_pad_input(msg, blk, padding):
+        if type(msg).__name__ == 'str':
+            m = msg.encode('utf-8')
+        elif type(msg).__name__ == 'bytes':
+            m = msg
         else:
             print('message is unexpected type.')
-            return ('',-1,-1)
+            return '', -1, -1
     
         try: 
-            b = int(bl)
+            b = int(blk)
             if not 1 < b and b <= 32:
                 raise ValueError('PKCS7 block must be between 1 and 32 bytes')
         except ValueError:
             print('Not a valid integer')
-            return ('',-1,-1)
+            return '', -1, -1
 
         try:
-            p = int(pad)
-            if not 0 <= pad <= 1:
+            p = int(padding)
+            if not 0 <= padding <= 1:
                 raise ValueError('Bad Encrypt')
         except ValueError:
             print('Encrypt not a valid integer between 0 and 1')
-            return ('',-1,-1)
-        return (m,b,p)
+            return '', -1, -1
+        return m, b, p
 
-    def pkcs7_pad(m, bl=16):
-        pad = bl
-        if len(m) % bl:
-            pad = bl - len(m) % bl
-        ret = m + bytes([pad]) * pad
+    def pkcs7_pad(msg, blk=16):
+        padding = blk
+        if len(my_msg) % blk:
+            padding = blk - len(msg) % blk
+        ret = msg + bytes([padding]) * padding
         return ret
 
-    def pkcs7_unpad(m, bl=16):
-        if len(m) % int(bl) != 0:
+    def pkcs7_unpad(msg, blk=16):
+        if len(msg) % int(blk) != 0:
             raise PaddingError('Message length not evenly divided.')
-        pad = int(m[-1])
-        if m[-pad:] != bytes((pad,))*pad:
+        padding = int(msg[-1])
+        if msg[-padding:] != bytes((padding,))*padding:
             raise PaddingError('Incorrect padding.')
-        return m[:-pad]
+        return msg[:-padding]
 
-    m, bl, p = check_pad_input(message, block, pad)
-    assert(bl != -1), 'Invalid input.'
-    if p:
-        return(pkcs7_pad(m,bl))
-    return(pkcs7_unpad(m,bl))
+    my_msg, my_bl, my_pad = check_pad_input(message, block, pad)
+    assert(my_bl != -1), 'Invalid input.'
+    if my_pad:
+        return pkcs7_pad(my_msg, my_bl)
+    return pkcs7_unpad(my_msg, my_bl)
+
 
 def aes_cbc(message, key, iv, encrypt=1):
 
-    def check_aes_input(message, key, iv, encrypt):
-        if type(message).__name__ == 'str':
-            m = message.encode('utf-8')
-        elif type(message).__name__ == 'bytes':
-            m = message
+    def check_aes_input(msg, in_key, in_iv, is_enc):
+        if type(msg).__name__ == 'str':
+            m = msg.encode('utf-8')
+        elif type(msg).__name__ == 'bytes':
+            m = msg
         else:
             print('message is unexpected type.')
-            return (b'',b'',-1,-1)
+            return b'', b'', -1, -1
 
-        if type(key).__name__ == 'str':
-            k = key.encode('utf-8')
-        elif type(key).__name__ == 'bytes':
-            k = key
+        if type(in_key).__name__ == 'str':
+            k = in_key.encode('utf-8')
+        elif type(in_key).__name__ == 'bytes':
+            k = in_key
         else:
             print('key is unexpected type.')
-            return (b'', b'', b'', -1)
+            return b'', b'', b'', -1
         if len(k) != 16 and len(k) != 24 and len(k) != 32:
             print('Invalid key length')
-            return (b'', b'', b'', -1)
+            return b'', b'', b'', -1
 
-        if type(iv).__name__ == 'str':
-            i = iv.encode('utf-8')
-        elif type(iv).__name__ == 'bytes':
-            i = iv
+        if type(in_iv).__name__ == 'str':
+            i = in_iv.encode('utf-8')
+        elif type(in_iv).__name__ == 'bytes':
+            i = in_iv
         else:
             print('IV is unexpected type.')
-            return (b'', b'', b'', -1)
+            return b'', b'', b'', -1
         assert(len(i) == 16), 'Invalid IV length'
 
         try:
-            e = int(encrypt)
-            if not 0 <= encrypt <= 1:
+            e = int(is_enc)
+            if not 0 <= is_enc <= 1:
                 raise ValueError('Bad Encrypt')
         except ValueError:
             print('Encrypt not a valid integer between 0 and 1')
-            return (b'', b'', b'', -1)
-        return (m, k, i, e)
+            return b'', b'', b'', -1
+        return m, k, i, e
 
-    def dec(text, key, iv):
+    def dec(ct, in_key, in_iv):
         ret = b''
-        pb = iv
-        crypt = base64.b64decode(text)
-        cipher = AES.new(key, AES.MODE_ECB)
-        for bl in get_blocks(crypt, 16):
+        pb = in_iv
+        cry = base64.b64decode(ct)
+        cipher = AES.new(in_key, AES.MODE_ECB)
+        for bl in get_blocks(cry, 16):
             ret += xor_bytes(cipher.decrypt(bl), pb)
             pb = bl
         return pkcs7_padding(ret,16,0)
 
-    def enc(text, key, iv):
+    def enc(text, in_key, in_iv):
         ret = b''
-        pb = iv
-        crypt = pkcs7_padding(text,16,1)
-        cipher = AES.new(key, AES.MODE_ECB)
-        for bl in get_blocks(crypt, 16):
+        pb = in_iv
+        to_crypt = pkcs7_padding(text,16,1)
+        cipher = AES.new(in_key, AES.MODE_ECB)
+        for bl in get_blocks(to_crypt, 16):
             pb = cipher.encrypt(xor_bytes(bl, pb))
             ret += pb
         return base64.b64encode(ret)
@@ -140,63 +140,65 @@ def aes_cbc(message, key, iv, encrypt=1):
     def xor_bytes(b1, b2):
         return b''.join(bytes([a ^ b]) for a,b in zip(b1,b2[:len(b1)]))
     
-    crypt, k, i, e = check_aes_input(message, key, iv, encrypt)
-    assert(e != -1), 'Invalid input.'
+    my_crypt, my_key, my_iv, my_enc = check_aes_input(message, key, iv, encrypt)
+    assert(my_enc != -1), 'Invalid input.'
 
-    if e:
-        return enc(crypt, k, i)
-    return dec(crypt, k, i)
+    if my_enc:
+        return enc(my_crypt, my_key, my_iv)
+    return dec(my_crypt, my_key, my_iv)
+
 
 def aes_ecb(message, key, encrypt=1):
 
-    def check_aes_input(message, key, encrypt):
-        if type(message).__name__ == 'str':
-            m = message.encode('utf-8')
-        elif type(message).__name__ == 'bytes':
-            m = message
+    def check_aes_input(msg, in_key, is_enc):
+        if type(msg).__name__ == 'str':
+            m = msg.encode('utf-8')
+        elif type(msg).__name__ == 'bytes':
+            m = msg
         else:
             print('message is unexpected type.')
-            return (b'',b'',-1)
+            return b'', b'', -1
 
-        if type(key).__name__ == 'str':
-            k = key.encode('utf-8')
-        elif type(key).__name__ == 'bytes':
-            k = key
+        if type(in_key).__name__ == 'str':
+            k = in_key.encode('utf-8')
+        elif type(in_key).__name__ == 'bytes':
+            k = in_key
         else:
             print('key is unexpected type.')
-            return (b'',b'',-1)
+            return b'', b'', -1
         if len(k) != 16 and len(k) != 24 and len(k) != 32:
             print('Invalid key length')
             print(len(k))
-            return (b'', b'', -1)
+            return b'', b'', -1
 
         try:
-            e = int(encrypt)
-            if not 0 <= encrypt <= 1:
+            e = int(is_enc)
+            if not 0 <= is_enc <= 1:
                 raise ValueError('Bad Encrypt')
         except ValueError:
             print('Encrypt not a valid integer between 0 and 1')
-            return (b'',b'',-1)
-        return (m, k, e)
+            return b'', b'', -1
+        return m, k, e
 
-    def dec(ct, key):
+    def dec(ct, in_key):
         cry = base64.b64decode(ct)
-        cipher = AES.new(key, AES.MODE_ECB)
+        cipher = AES.new(in_key, AES.MODE_ECB)
         c = cipher.decrypt(cry)
         return pkcs7_padding(c, 16, 0)
         
-    def enc(ct, key):
-        cry = pkcs7_padding(ct,16,1)
-        cipher = AES.new(key, AES.MODE_ECB)
+    def enc(text, in_key):
+        cry = pkcs7_padding(text, 16, 1)
+        cipher = AES.new(in_key, AES.MODE_ECB)
         c = cipher.encrypt(cry)
         return base64.b64encode(c)
 
-    crypt, k, e = check_aes_input(message, key, encrypt)
-    assert(e != -1), 'Invalid input.'
+    my_crypt, my_key, my_enc = check_aes_input(message, key, encrypt)
+    assert(my_enc != -1), 'Invalid input.'
 
-    if e:
-        return enc(crypt, k)
-    return dec(crypt, k)
+    if my_enc:
+        return enc(my_crypt, my_key)
+    return dec(my_crypt, my_key)
+
 
 def make_b64_printable(enc):
     ret = b''
@@ -206,19 +208,21 @@ def make_b64_printable(enc):
         ret += b'\n'
     return ret
 
-def test_aes_ecb(ct):
+
+def test_aes_ecb(ct, bs=16):
     blocks = []
-    for x in range(32,len(ct),32):
-        blocks.append(ct[x-32:x])
+    crypt = base64.b64decode(ct)
+    for x in range(bs, len(crypt), bs):
+        blocks.append(crypt[x-bs:x])
     blocks.sort()
-    ret = 0
-    for y in range(1,len(blocks)):
+    for y in range(1, len(blocks)):
         if blocks[y-1] == blocks[y]:
-            ret = 1
-    return ret
+            return True
+    return False
+
 
 def gen_random_bytes(block=16):
     if not 1 <= block <= 32:
         return b''
-    return bytes(random.randint(0,255) for _ in range(block))
+    return bytes(random.randint(0, 255) for _ in range(block))
 

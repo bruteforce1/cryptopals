@@ -60,8 +60,8 @@ import argparse
 import base64
 import random
 import sys
-sys.path.insert(0, './utils')
-from cpset2 import aes_ecb, gen_random_bytes, test_aes_ecb
+
+from utils.cpset2 import aes_ecb, gen_random_bytes, test_aes_ecb
 
 random.seed(1)
 GLOBAL_KEY = gen_random_bytes(16)

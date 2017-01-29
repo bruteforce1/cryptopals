@@ -23,10 +23,9 @@ The file here is intelligible (somewhat) when CBC decrypted against
 
 import argparse
 import os
-import string
 import sys
-sys.path.insert(0, './utils')
-from cpset2 import aes_cbc, make_b64_printable
+from utils.cpset2 import aes_cbc, make_b64_printable
+
 
 def main(filename, key, iv):
     print('Input File: ' + str(filename))
@@ -38,7 +37,7 @@ def main(filename, key, iv):
         print(filename + ' is not a valid file.')
         return -1
     
-    with open(filename,'r') as infile:
+    with open(filename, 'r') as infile:
         for line in infile:
             crypt += line
 
@@ -47,11 +46,11 @@ def main(filename, key, iv):
         print('Decrypted Contents in: ' + filename + '.dec')
         with open(filename + '.dec', 'w') as tf:
             tf.write(ret.decode('utf-8'))
-        unret = make_b64_printable(aes_cbc(ret, key, iv))
-        if unret:
+        un_ret = make_b64_printable(aes_cbc(ret, key, iv))
+        if un_ret:
             print('Encrypted Contents in: ' + filename + '.enc')
             with open(filename + '.enc', 'w') as tf:
-                tf.write(unret.decode('utf-8'))
+                tf.write(un_ret.decode('utf-8'))
             return 0
     print('Error.')
     return -1
@@ -60,13 +59,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Implements AES CBC encryption and decryption manually.')
     parser.add_argument('-f', '--inputfile', help='opt. file encrypted \
-        with AES in CBC mode', 
-        default='set2/ch10/10.txt')
-    parser.add_argument('-i', '--iv', help='opt. 16 byte initializtion \
-        vector',
-        default=chr(0) * 16)
+                        with AES in CBC mode',
+                        default='10.txt')
+    parser.add_argument('-i', '--iv', help='opt. 16 byte initialization \
+                        vector',
+                        default=chr(0) * 16)
     parser.add_argument('-k', '--key', help='opt. 16 byte encryption or \
-        decryption key',
-        default='YELLOW SUBMARINE')
+                        decryption key',
+                        default='YELLOW SUBMARINE')
     args = parser.parse_args()
     sys.exit(main(args.inputfile, args.key, args.iv))

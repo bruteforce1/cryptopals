@@ -20,19 +20,18 @@ So: pad any block to a specific block length, by appending the number
 """
 
 import argparse
-import string
 import sys
-sys.path.insert(0, './utils')
-from cpset2 import pkcs7_padding
+from utils.cpset2 import pkcs7_padding
+
 
 def main(message, bl):
     print('Line: ' + str(message))
-    print('blocklength: ' + str(bl))
-    ret = pkcs7_padding(message,bl,1)
+    print('block length: ' + str(bl))
+    ret = pkcs7_padding(message, bl, 1)
     if ret:
         print('PKCS#7 padded: ')
         print(ret)
-        unret = pkcs7_padding(ret,bl,0)
+        unret = pkcs7_padding(ret, bl, 0)
         if unret:
             print('PKCS#7 unpadded: ')
             print(unret)
@@ -46,9 +45,9 @@ if __name__ == '__main__':
         length of 20.'
         )
     parser.add_argument('-m', '--message', help='opt. message to pad',
-                    default='YELLOW SUBMARINE')
+                        default='YELLOW SUBMARINE')
     parser.add_argument('-b', '--blocklength', help='opt. block length \
-                    in bytes, between 1-32',
-                    default='20')
+                        in bytes, between 1-32',
+                        default='20')
     args = parser.parse_args()
     sys.exit(main(args.message, args.blocklength))

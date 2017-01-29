@@ -26,21 +26,22 @@ Encrypt a bunch of stuff using your repeating-key XOR function. Encrypt
 """
 
 import argparse
-import string
 import sys
 import math
 import binascii
 
+
 def encrypt_rkx(msg, key):
-    msglen=len(msg)
-    testmsg = ''.join(chr(ord(x) ^ ord(y)) 
-        for x,y in zip(key*(math.ceil(msglen/len(key))+1),msg))
-    return binascii.hexlify(testmsg.encode('utf-8')).decode('utf-8')
+    msg_len = len(msg)
+    test_msg = ''.join(chr(ord(x) ^ ord(y))
+                       for x, y in zip(key*(math.ceil(msg_len/len(key))+1), msg))
+    return binascii.hexlify(test_msg.encode('utf-8')).decode('utf-8')
+
 
 def main(message, key):
     print('Line: ' + message)
     print('Key: ' + key)
-    ret = encrypt_rkx(message,key)
+    ret = encrypt_rkx(message, key)
     if ret:
         print('Encrypt: ' + ret)
         return 0
@@ -51,9 +52,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Encrypts a message with repeating key XOR')
     parser.add_argument('-m', '--message', help='opt. message to encrypt',
-                    default='')
+                        default='')
     parser.add_argument('-k', '--key', help='opt. key',
-                    default='ICE')
+                        default='ICE')
     args = parser.parse_args()
     if not args.message:
         args.message = 'Burning \'em, if you ain\'t quick and nimble\nI go'

@@ -25,10 +25,9 @@ Crypto nerds know where we're going with this. Bear with us.
 """
 
 import argparse
-import string
 import sys
-sys.path.insert(0, './utils')
-from cpset2 import pkcs7_padding, PaddingError
+from utils.cpset2 import pkcs7_padding, PaddingError
+
 
 def validate_pkcs7(test):
     try:
@@ -36,6 +35,7 @@ def validate_pkcs7(test):
         print('Padding is correct')
     except PaddingError:
         print('Message has a padding error.')
+
 
 def test_pkcs7():
     test1 = b'ICE ICE BABY\x04\x04\x04\x04'

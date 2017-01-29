@@ -11,11 +11,9 @@ Find it.
 """
 
 import argparse
-import base64
-import string
 import sys
-sys.path.insert(0, 'set1/ch3')
-from singlebytexor import find_key
+from set1.ch3.singlebytexor import find_key
+
 
 def find_msg(filename):
     score = 0
@@ -23,11 +21,12 @@ def find_msg(filename):
     with open(filename, 'r') as f:
         for line in f:
             line = line.rstrip('\n')
-            linekeys = find_key(line)
-            if linekeys[0] is not '' and score < linekeys[2]:
-                score = linekeys[2]
-                keys = (line, linekeys[0], linekeys[1])
+            line_keys = find_key(line)
+            if line_keys[0] is not '' and score < line_keys[2]:
+                score = line_keys[2]
+                keys = (line, line_keys[0], line_keys[1])
     return keys
+
 
 def main(filename):
     ret = find_msg(filename)
@@ -42,6 +41,7 @@ if __name__ == "__main__":
         description='Searches through list of encrypted data to find string \
         encrypted by repeating key xor.'
         )
-    parser.add_argument('filename', help='encrypted input file')
+    parser.add_argument('-f', '--inputfile', help='opt. encrypted input file',
+                        default='4.txt')
     args = parser.parse_args()
-    sys.exit(main(args.filename))
+    sys.exit(main(args.inputfile))

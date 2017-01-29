@@ -28,43 +28,45 @@ Detect the block cipher mode the function is using each time. You
 
 import argparse
 import random
-import string
 import sys
-sys.path.insert(0, './utils')
-from cpset2 import aes_ecb, aes_cbc, test_aes_ecb
+from utils.cpset2 import aes_ecb, aes_cbc, test_aes_ecb
+
 
 random.seed()
+
 
 def gen_random_bytes(block=16):
     if not 1 <= block <= 32:
         return b''
-    return bytes(random.randint(0,255) for _ in range(block))
+    return bytes(random.randint(0, 255) for _ in range(block))
+
 
 def encryption_oracle(text):
     if type(text).__name__ == 'str':
         t = text.encode('utf-8')
-    elif type(message).__name__ == 'bytes':
+    elif type(text).__name__ == 'bytes':
         t = text
     else:
         raise TypeError('Bad type passed to encryption_oracle')
 
     key = gen_random_bytes()
-    bef = gen_random_bytes(random.randint(5,10))
-    af = gen_random_bytes(random.randint(5,10))
+    bef = gen_random_bytes(random.randint(5, 10))
+    af = gen_random_bytes(random.randint(5, 10))
     pt = bef + t + af
-    if random.randint(0,1):
+    if random.randint(0, 1):
         iv = gen_random_bytes()
         ret = aes_cbc(pt, key, iv)
-        encmode = 0
+        enc_mode = 0
     else:
         ret = aes_ecb(pt, key)
-        encmode = 1
+        enc_mode = 1
     guess = test_aes_ecb(ret)
-    print('AES Mode: {0}; Guess: {1}'.format(['CBC','ECB'][encmode],
-        ['CBC','ECB'][guess]))
-    if encmode == guess:
+    print('AES Mode: {0}; Guess: {1}'.format(['CBC', 'ECB'][enc_mode],
+        ['CBC', 'ECB'][guess]))
+    if enc_mode == guess:
         return 1
     return 0
+
 
 def main():
     ans = encryption_oracle('a' * 1000)

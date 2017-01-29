@@ -53,14 +53,13 @@ import binascii
 import math
 import random
 import re
-import string
 import sys
-sys.path.insert(0, './utils')
-from cpset2 import aes_ecb, gen_random_bytes, test_aes_ecb, pkcs7_padding
+from utils.cpset2 import aes_ecb, gen_random_bytes, test_aes_ecb, pkcs7_padding
 
 UID = 10
 random.seed(1)
 GLOBAL_KEY = gen_random_bytes(16)
+
 
 def decode_profile(cookie):
     profile = []
@@ -72,80 +71,83 @@ def decode_profile(cookie):
         profile.append(tup)
     return profile
 
+
 def encode_profile(profile):
-    encprofile = ''
+    enc_profile = ''
     for item in profile:
-        if encprofile:
-            encprofile = encprofile + '&' + str(item[0]) \
+        if enc_profile:
+            enc_profile = enc_profile + '&' + str(item[0]) \
                        + '=' + str(item[1])
         else:
-            encprofile = str(item[0]) + '=' + str(item[1])
-    return encprofile
+            enc_profile = str(item[0]) + '=' + str(item[1])
+    return enc_profile
+
 
 def profile_for(email):
     global UID
     profile = []
-    newemail = re.sub('[=&]', '', email)
+    new_email = re.sub('[=&]', '', email)
 
-    profile.append(['email', newemail])
+    profile.append(['email', new_email])
     profile.append(['uid', UID])
     profile.append(['role', 'user'])
-    encprofile = encode_profile(profile)
+    enc_profile = encode_profile(profile)
+    UID += 1
+    return enc_profile
 
-    UID = UID + 1
-
-    return encprofile
 
 def encrypt_profile(profile):
-    return aes_ecb(profile,GLOBAL_KEY,1)
+    return aes_ecb(profile, GLOBAL_KEY, 1)
+
 
 def decrypt_profile(profile):
-    return aes_ecb(profile,GLOBAL_KEY,0)
+    return aes_ecb(profile, GLOBAL_KEY, 0)
+
 
 def attacker(email):
-    blocklen = 16
+    block_len = 16
     
-    def findoffsets(email):
-        prof = profile_for(email)
-        tofind = 'role='
-        def_start = len(prof.split(email)[0])
-        role_start = len(prof.split(tofind)[0]) + len(tofind)
-        start_offset = blocklen - def_start%blocklen
-        role_offset = blocklen - role_start%blocklen
+    def find_offsets(in_email):
+        prof = profile_for(in_email)
+        to_find = 'role='
+        def_start = len(prof.split(in_email)[0])
+        role_start = len(prof.split(to_find)[0]) + len(to_find)
+        start_offset = block_len - def_start % block_len
+        role_offset = block_len - role_start % block_len
         return start_offset, role_offset
 
-    def findprof(email):
-        if not email:
+    def find_profile(in_email):
+        if not in_email:
             return ''
 
-        apos,rpos = findoffsets(email)
+        apos, rpos = find_offsets(in_email)
         pk7pad = pkcs7_padding('admin')
 
-        adminemail = email[0:apos].encode('UTF-8') + pk7pad
-        adminprof = profile_for(adminemail.decode('utf-8'))
-        adminenc = encrypt_profile(adminprof)
-        adminblock = math.floor(len(adminprof.split('admin')[0])/blocklen) + 1
+        admin_email = in_email[0:apos].encode('UTF-8') + pk7pad
+        admin_prof = profile_for(admin_email.decode('utf-8'))
+        admin_email = encrypt_profile(admin_prof)
+        admin_block = math.floor(len(admin_prof.split('admin')[0])/block_len) + 1
 
-        roleemail = email + email[-1]*rpos
-        roleprof = profile_for(roleemail)
-        roleenc = encrypt_profile(roleprof)
-        roleblock = math.ceil(len(roleprof)/blocklen)
+        role_email = in_email + in_email[-1] * rpos
+        role_prof = profile_for(role_email)
+        role_enc = encrypt_profile(role_prof)
+        role_block = math.ceil(len(role_prof)/block_len)
 
-        retenc = binascii.b2a_base64(binascii.a2b_base64(roleenc)[0:blocklen*(roleblock-1)] + \
-                 binascii.a2b_base64(adminenc)[(adminblock-1)*blocklen:(adminblock)*blocklen])
+        ret_enc = binascii.b2a_base64(binascii.a2b_base64(role_enc)[0:block_len*(role_block-1)] +
+                                      binascii.a2b_base64(admin_email)[(admin_block-1)*block_len:admin_block*block_len])
+        return ret_enc
 
-        return retenc
-
-    enc = findprof(email)
+    enc = find_profile(email)
     if enc:
         return enc
     return b''
 
+
 def main(email):
-    #prof = decode_profile('test2=test2&user=foo&name=blah')
-    #encode_profile(prof)
-    #enc = encrypt_profile(prof)
-    #dec = decrypt_profile(enc)
+    #    prof = decode_profile('test2=test2&user=foo&name=blah')
+    #    encode_profile(prof)
+    #    enc = encrypt_profile(prof)
+    #    dec = decrypt_profile(enc)
     print('Attempting for email: {0}'.format(email))
     ans = attacker(email)
     if ans:
@@ -162,7 +164,7 @@ if __name__ == '__main__':
         data encrypted with ECB block mode by switching out blocks.'
         )
     parser.add_argument('-e', '--email', help='opt. email',
-                    default='foo@bar.com')
+                        default='foo@bar.com')
     args = parser.parse_args()
 
     sys.exit(main(args.email))
