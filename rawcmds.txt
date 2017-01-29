@@ -14,5 +14,5 @@ venv/bin/python3 set2/ch10/implement_aes_cbc.py
 venv/bin/python3 set2/ch11/detect_ecb_cbc.py
 venv/bin/python3 set2/ch12/decrypt_ecb_simple.py
 venv/bin/python3 set2/ch13/ecb_cut_and_paste.py
-
+venv/bin/python3 set2/ch12/decrypt_ecb_hard.py
 venv/bin/python3 set2/ch15/validate_pkcs7.py
