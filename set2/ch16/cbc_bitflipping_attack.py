@@ -94,14 +94,10 @@ def flip_admin(admin_input):
     admin_mod = admin_input
     for y in range(0, len(admin_mod)-1):
         if admin_mod[y] == '=' or admin_mod[y] == ';':
-            new_val = flip_char(admin_mod[y])
+            new_val = chr(ord(admin_mod[y]) ^ 1)
             admin_mod = admin_mod[:y] + new_val + admin_mod[y+1:]
             flips.append(y)
     return admin_mod, flips
-
-
-def flip_char(ch):
-    return chr(ord(ch) ^ 1)
 
 
 def flip_enc(admin_enc, flips, prepend_size):
