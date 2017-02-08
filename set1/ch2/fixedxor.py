@@ -31,14 +31,11 @@ def xor_binary_strings(str1, str2):
         return ''
     bstr1 = binascii.unhexlify(str1)
     bstr2 = binascii.unhexlify(str2)
-    return binascii.hexlify(
-        ''.join(chr(x ^ y) for x, y in zip(bstr1, bstr2)
-        ).encode('utf-8')).decode('utf-8')
+    return binascii.hexlify(''.join(chr(x ^ y) for x, y in zip(bstr1, bstr2)).encode('utf-8')).decode('utf-8')
 
 
 def main():
-    ret = xor_binary_strings('1c0111001f010100061a024b53535009181c',
-                           '686974207468652062756c6c277320657965')
+    ret = xor_binary_strings('1c0111001f010100061a024b53535009181c', '686974207468652062756c6c277320657965')
     print(ret)
     if ret == '746865206b696420646f6e277420706c6179':
         print('It worked!')

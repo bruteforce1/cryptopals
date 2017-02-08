@@ -41,14 +41,14 @@ def find_key(hex_str):
                 s_score -= 100
         return s_score
 
-    def xor_key(msg, key, msglen):
+    def xor_key(msg, key):
         test_msg = ''.join(chr(y ^ key) for y in msg)
         s_score = get_score(test_msg)
         if s_score > 0:
             return test_msg, s_score
         return '', -1
 
-    for x in range(1,255):
+    for x in range(1, 255):
         test, test_score = xor_key(msg, x, len(hex_str) / 2)
         if score < test_score:
             score = test_score
