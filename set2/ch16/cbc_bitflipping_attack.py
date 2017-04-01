@@ -67,7 +67,7 @@ def attacker():
     if admin_mod[-1:] == ';':
         admin_mod = admin_mod[:-1]
     admin_mod, flips = flip_admin(admin_mod)
-    admin_profile = 'A' * (prepend_size) + admin_mod
+    admin_profile = 'A' * prepend_size + admin_mod
     admin_enc = encrypt_user_data(admin_profile)
     admin_enc = flip_enc(admin_enc, flips, prepend_size)
     if decrypt_profile(admin_enc):
